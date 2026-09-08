@@ -1,0 +1,57 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      qmomProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Problem C - both operators: the blob advects while its moments grow.
+//
+// Identical to problem B except that the phase-space growth of problem A is
+// switched back on, so this is the actual coupled problem. The exact solution
+// is the translated blob multiplied by e^(kt) on moment k.
+
+nMoments        10;
+
+phaseSpace
+{
+    growthModel     linear;
+    growthRate      1;
+}
+
+qmomOptions
+{
+    adaptive        false;
+    rmin            1e-10;
+    eabs            1e-10;
+    cutoff          1e-30;
+}
+
+initialDistribution
+{
+    mu              10;
+    sigma           1;
+    spatialShape    gaussianBlob;
+    sigmaSpace      0.25;
+    centre          (0 0 0);
+}
+
+velocityModel
+{
+    type            constantX;
+    U0              1;
+}
+
+errorAnalysis
+{
+    type            advectedGaussian;
+    periodicLength  2;
+}
+
+repair
+{
+    repairBrokenCells   false;
+    m0Floor             0;
+}

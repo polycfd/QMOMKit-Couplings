@@ -1,0 +1,18 @@
+# QMOMKit is a C++17 library while OpenFOAM-14 compiles with -std=c++14.
+# The flag below is appended after the one in the wmake c++ rules, and the last
+# -std on the command line is the one GCC honours, so this raises the standard
+# for this application only. OpenFOAM's headers compile cleanly at C++17.
+#
+# QMOMKIT_DIR is the QMOMKit install prefix; it must be set in the environment.
+# The Allwmake script in the root of this repository checks it before building.
+
+EXE_INC = \
+    -std=c++17 \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(QMOMKIT_DIR)/include
+
+EXE_LIBS = \
+    -lfiniteVolume \
+    -lmeshTools \
+    -L$(QMOMKIT_DIR)/lib -lqmomkit

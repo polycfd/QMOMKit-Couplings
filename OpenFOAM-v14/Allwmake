@@ -1,0 +1,34 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+
+# QMOMKit install prefix, taken from the environment:
+#   QMOMKIT_DIR=/path/to/qmomkit/inst ./Allwmake
+if [ -z "$QMOMKIT_DIR" ]
+then
+    echo "Allwmake: QMOMKIT_DIR is not set." 1>&2
+    echo "Set it to the QMOMKit install prefix, e.g." 1>&2
+    echo "    QMOMKIT_DIR=/path/to/QMOMkit/inst ./Allwmake" 1>&2
+    exit 1
+fi
+
+export QMOMKIT_DIR
+
+if [ ! -f "$QMOMKIT_DIR/include/qmomkit/qmomkit.hpp" ]
+then
+    echo "Allwmake: QMOMKIT_DIR is set to '$QMOMKIT_DIR'," 1>&2
+    echo "but no QMOMKit install was found there" 1>&2
+    echo "(expected $QMOMKIT_DIR/include/qmomkit/qmomkit.hpp)." 1>&2
+    echo "Set QMOMKIT_DIR to the QMOMKit install prefix." 1>&2
+    exit 1
+fi
+
+if [ -z "$WM_PROJECT_DIR" ]
+then
+    echo "Allwmake: OpenFOAM environment not set." 1>&2
+    echo "Source it first, e.g. . /home/blaisb/soft/openfoam/OpenFOAM-14/etc/bashrc" 1>&2
+    exit 1
+fi
+
+echo "Building qmomAdvectionFoam against QMOMKit at $QMOMKIT_DIR"
+
+wmake applications/qmomAdvectionFoam

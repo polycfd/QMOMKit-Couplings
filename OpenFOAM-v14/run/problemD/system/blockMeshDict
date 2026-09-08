@@ -1,0 +1,57 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// 50 x 50 cells on [-1,1]^2, thin and empty in z.
+//
+// The Taylor-Green vortex uses k = pi/2, which puts a velocity node on each of
+// the four boundaries: the normal velocity there is exactly zero, so no
+// moments ever cross the boundary and zeroGradient is enough.
+
+convertToMeters 1;
+
+vertices
+(
+    (-1 -1 -0.025)
+    ( 1 -1 -0.025)
+    ( 1  1 -0.025)
+    (-1  1 -0.025)
+    (-1 -1  0.025)
+    ( 1 -1  0.025)
+    ( 1  1  0.025)
+    (-1  1  0.025)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (50 50 1) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    sides
+    {
+        type            patch;
+        faces
+        (
+            (0 4 7 3)
+            (1 2 6 5)
+            (0 1 5 4)
+            (3 7 6 2)
+        );
+    }
+    frontAndBack
+    {
+        type            empty;
+        faces
+        (
+            (0 3 2 1)
+            (4 5 6 7)
+        );
+    }
+);

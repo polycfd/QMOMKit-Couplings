@@ -1,0 +1,36 @@
+FoamFile
+{
+    format      ascii;
+    class       volScalarField;
+    location    "0";
+    object      M;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Template field. qmomAdvectionFoam builds M0 ... M<nMoments-1> from this one
+// file - they all share these boundary conditions and dimensions - and then
+// overwrites the internal field with the initial distribution described in
+// constant/qmomProperties.
+//
+// The moments are carried dimensionless: the internal coordinate xi and the
+// growth law G(xi) have no units attached, exactly as in the deal.II program.
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+    frontAndBack
+    {
+        type            empty;
+    }
+}

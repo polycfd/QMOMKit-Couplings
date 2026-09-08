@@ -1,0 +1,56 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      qmomProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Problem B - physical-space advection only, nothing in phase space.
+//
+// The converse of problem A: a Gaussian blob of moments is translated at
+// u = 1 through the periodic box while the moments themselves are untouched.
+// Exercises the finite-volume transport alone.
+
+nMoments        10;
+
+phaseSpace
+{
+    growthModel     none;
+}
+
+qmomOptions
+{
+    adaptive        false;
+    rmin            1e-10;
+    eabs            1e-10;
+    cutoff          1e-30;
+}
+
+initialDistribution
+{
+    mu              10;
+    sigma           1;
+    spatialShape    gaussianBlob;
+    sigmaSpace      0.25;
+    centre          (0 0 0);
+}
+
+velocityModel
+{
+    type            constantX;
+    U0              1;
+}
+
+errorAnalysis
+{
+    type            advectedGaussian;
+    periodicLength  2;
+}
+
+repair
+{
+    repairBrokenCells   false;
+    m0Floor             0;
+}

@@ -1,0 +1,22 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+
+# Removes everything Allwmake and the cases produce: the solver objects and
+# binary, and every case's mesh, time directories and logs.
+
+if [ -z "$WM_PROJECT_DIR" ]
+then
+    echo "Allwclean: OpenFOAM environment not set." 1>&2
+    echo "Source it first, e.g. . /path/to/OpenFOAM-14/etc/bashrc" 1>&2
+    exit 1
+fi
+
+echo "Cleaning qmomAdvectionFoam"
+wclean applications/qmomAdvectionFoam
+
+for case in run/*
+do
+    [ -x "$case/Allclean" ] || continue
+    echo "Cleaning $case"
+    "$case/Allclean"
+done

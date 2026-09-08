@@ -1,0 +1,67 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      qmomProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Problem D - 2-D blob stirred by a steady Taylor-Green vortex, with growth.
+//
+// The vortex is divergence free, so the transport reduces to
+// dM_k/dt + u.grad(M_k) = k M_k along a trajectory and the exact solution is
+// the initial field read at the foot of the characteristic, multiplied by
+// e^(kt). Taylor-Green trajectories have no elementary closed form, so that
+// foot is found by integrating the trajectory backwards with RK4
+// (errorAnalysis/traceStepSize controls how finely; reportEvery keeps that
+// cost off every step, since it grows linearly with t).
+//
+// The blob shears heavily and does not stay Gaussian; only its composition
+// with the flow map is exact. `adaptive` is on here because the sheared,
+// under-resolved moment sequences do lose realizability - it lets Wheeler drop
+// nodes instead of failing.
+
+nMoments        6;
+
+phaseSpace
+{
+    growthModel     linear;
+    growthRate      1;
+}
+
+qmomOptions
+{
+    adaptive        true;
+    rmin            1e-10;
+    eabs            1e-10;
+    cutoff          1e-30;
+}
+
+initialDistribution
+{
+    mu              10;
+    sigma           1;
+    spatialShape    gaussianBlob;
+    sigmaSpace      0.25;
+    centre          (0 0.25 0);
+}
+
+velocityModel
+{
+    type            taylorGreen;
+    omega           1;
+}
+
+errorAnalysis
+{
+    type            swirlGaussian;
+    traceStepSize   0.01;
+    reportEvery     200;
+}
+
+repair
+{
+    repairBrokenCells   true;
+    m0Floor             0;
+}

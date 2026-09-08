@@ -1,0 +1,54 @@
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      qmomProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Problem A - phase-space growth only, uniform in space.
+//
+// The moment field is spatially uniform and the velocity is zero, so the
+// advection operator is inert and this validates the QMOM machinery alone.
+// For G(xi) = xi the closure is exact, S_k = k M_k, so M_k(t) = M_k(0) e^(kt)
+// and the reported L2 error is a real error.
+
+nMoments        10;
+
+phaseSpace
+{
+    growthModel     linear;     // linear | constant | none
+    growthRate      1;
+}
+
+qmomOptions
+{
+    adaptive        false;
+    rmin            1e-10;
+    eabs            1e-10;
+    cutoff          1e-30;
+}
+
+initialDistribution
+{
+    mu              10;
+    sigma           1;
+    spatialShape    uniform;    // uniform | gaussianBlob
+}
+
+velocityModel
+{
+    type            noFlow;     // noFlow | constantX | taylorGreen
+}
+
+errorAnalysis
+{
+    type            constantSpace;
+}
+
+repair
+{
+    repairBrokenCells   false;
+    m0Floor             0;
+}
