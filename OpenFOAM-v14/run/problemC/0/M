@@ -13,7 +13,7 @@ FoamFile
 // constant/qmomProperties.
 //
 // The moments are carried dimensionless: the internal coordinate xi and the
-// growth law G(xi) have no units attached, exactly as in the deal.II program.
+// growth law G(xi) have no units attached.
 
 dimensions      [0 0 0 0 0 0 0];
 

@@ -31,8 +31,8 @@ Description
     source. Everything to do with QMOM - the inversion and the reconstruction
     of the rates - is the single call to QMOMKit in phaseSpaceStep.H.
 
-    This is the OpenFOAM counterpart of the deal.II discontinuous Galerkin
-    program in DG-QMOM/QMOM_kit, and reproduces its four reference problems.
+    Four validation cases ship under run/, each with an analytical solution
+    the solver measures against; see README.md.
 
 \*---------------------------------------------------------------------------*/
 

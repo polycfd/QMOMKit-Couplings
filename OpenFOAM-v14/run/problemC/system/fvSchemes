@@ -23,11 +23,10 @@ divSchemes
 
     // Every moment is advected with the same scheme. `upwind` makes each face
     // value a convex combination of cell values, which keeps the moment
-    // *vector* inside the realizable cone - the finite-volume counterpart of
-    // the single shared Zhang-Shu factor in the deal.II program. A
-    // higher-order limited scheme (e.g. `Gauss limitedLinear 1`) is more
-    // accurate but limits each moment independently, which distorts the ratios
-    // between moments and can push a cell out of the cone.
+    // *vector* inside the realizable cone. A higher-order limited scheme
+    // (e.g. `Gauss limitedLinear 1`) is more accurate but limits each moment
+    // independently, which distorts the ratios between moments and can push a
+    // cell out of the cone.
     "div\(phi,M.*\)"  Gauss upwind;
 }
 

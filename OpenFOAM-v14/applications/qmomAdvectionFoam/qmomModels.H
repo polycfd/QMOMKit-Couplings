@@ -4,13 +4,10 @@ Class
 
 Description
     Growth laws, velocity fields and analytical solutions for
-    qmomAdvectionFoam.
-
-    This is the OpenFOAM port of the model classes of the deal.II program
-    DG-QMOM/QMOM_kit/qmom_kit.cc: linear_growth_velocity(),
-    no_growth_velocity(), NoFlow, ConstantXFlow, TaylorGreenVortex,
-    ConstantSpaceGaussianPhase, GaussianSpaceConstantPhase,
-    GaussianSpaceGaussianPhase and SwirlGaussianSpaceGaussianPhase.
+    qmomAdvectionFoam. Each is selected by name from constant/qmomProperties:
+    growthModel (linear, constant, none), velocityModel (noFlow, constantX,
+    taylorGreen) and errorAnalysis (none, constantSpace, advectedGaussian,
+    swirlGaussian).
 
 \*---------------------------------------------------------------------------*/
 

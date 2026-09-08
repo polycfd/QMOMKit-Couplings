@@ -10,9 +10,9 @@
 // job - inversion and reconstruction of the rates - is the single call to
 // evaluate_qmom_continuous_moment_rates() below.
 //
-// The system is integrated with the same explicit SSP-RK3 as the deal.II
-// program. Note that the splitting is Lie, not Strang, so the scheme is
-// first-order in time overall regardless of the order of the two halves.
+// The system is integrated with an explicit SSP-RK3. Note that the splitting
+// is Lie, not Strang, so the scheme is first-order in time overall regardless
+// of the order of the two halves.
 
 if (growthActive)
 {

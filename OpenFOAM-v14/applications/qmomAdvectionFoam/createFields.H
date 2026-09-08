@@ -17,7 +17,7 @@ IOdictionary qmomProperties
 const label nMoments(qmomProperties.lookup<label>("nMoments"));
 
 // A quadrature with n nodes is built from moments 0 ... 2n-1, so the natural
-// choice is n = nMoments/2, exactly as in the deal.II program.
+// choice is n = nMoments/2.
 const label nNodes
 (
     qmomProperties.lookupOrDefault<label>("nNodes", nMoments/2)
