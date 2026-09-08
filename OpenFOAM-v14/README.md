@@ -18,15 +18,21 @@ The raw moments `M_k = ∫ ξᵏ f dξ` are transported instead:
   ∂M_k/∂t + ∇ₓ·( u M_k ) = S_k
 ```
 
-QMOMKit closes `S_k` by Wheeler inversion of the first `2n` moments. The whole
-phase-space part is one call in `phaseSpaceStep.H`:
+QMOMKit closes `S_k` by Wheeler inversion of the first `2n` moments. Rather
+than integrate `S_k`, the phase-space half advances the quadrature itself: the
+nodes move along their trajectories and the moments are reconstructed from the
+advanced quadrature. Two calls in `phaseSpaceStep.H`:
 
 ```cpp
-qmomkit::evaluate_qmom_advection_moment_rates(moments, nNodes, t, growthModel, qmomOptions)
+qmomkit::advance_qmom_continuous(qmomCase.initial_state(), t, dt, growthModel, options)
 ```
 
+Advecting nodes instead of moments is what makes the step realizable: the
+weights are carried unchanged and the abscissas only move, so the result cannot
+leave the realizable cone. Only the inversion of the incoming moments can fail.
+
 Moments are dimensionless (`[0 0 0 0 0 0 0]`). Operators are Lie-split:
-implicit `ddt`+`div` advection, then explicit SSP-RK3 in phase space —
+implicit `ddt`+`div` advection, then node advection (SSP-RK3) in phase space —
 first-order in time overall.
 
 ## Problems
@@ -71,14 +77,15 @@ buys is boundedness for free: no over- or undershoot in `M₀`, and `∫M₀ dV`
 conserved to round-off on a periodic box. The price is peak decay from the
 numerical diffusion.
 
-Two fallbacks in `constant/qmomProperties`, both off by default (on for D):
+Two fallbacks in `constant/qmomProperties` cover the inversion, both off by
+default (on for D):
 
 - `qmomOptions/adaptive` — Wheeler drops nodes instead of failing. Also fires
   on merely ill-conditioned sequences.
 - `repair/repairBrokenCells` — rebuilds a non-invertible cell from the nominal
-  shape rescaled to its `m₀` (`m₀` conserved, higher moments overwritten);
-  5 attempts per cell per step, then abort. `repair/m0Floor` additionally
-  clamps `m₀`. A run leaning on this is under-resolved and says so.
+  shape rescaled to its `m₀` (`m₀` conserved, higher moments overwritten), then
+  retries once. `repair/m0Floor` additionally clamps `m₀`. A run leaning on this
+  is under-resolved and says so.
 
 Without either, a failed inversion is a `FatalError` naming the cell.
 

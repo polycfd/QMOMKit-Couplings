@@ -53,6 +53,9 @@ Description
 
 #include "qmomModels.H"
 
+#include <cfenv>
+#include <cmath>
+#include <exception>
 #include <vector>
 
 using namespace Foam;
