@@ -10,7 +10,7 @@
 // directly: the nodes are moved along their phase-space trajectories with an
 // explicit SSP-RK3 and the raw moments are reconstructed from the advanced
 // quadrature. The whole job is QmomCase::initial_state() to invert, then the
-// single call to advance_qmom_continuous() below.
+// single call to advance_qmom_advection() below.
 //
 // Advecting the nodes rather than integrating dM_k/dt is what keeps the step
 // realizable: the weights are carried unchanged and the abscissas only move,
@@ -30,11 +30,11 @@ if (growthActive)
     const scalar dt = runTime.deltaTValue();
     const scalar t0 = runTime.value() - dt;
 
-    // Node advection defaults to SSP-RK3; the inversion options come from
-    // constant/qmomProperties. `scheme` is not used: with no discontinuous
-    // moment source there is only the continuous stage to advance.
-    qmomkit::QmomTransportOptions transportOptions;
-    transportOptions.qmom_options = qmomOptions;
+    // Node advection defaults to SSP-RK3. The inversion options from
+    // constant/qmomProperties are carried by the QmomState that
+    // QmomCase::initial_state() builds, not by these options. `scheme` is not
+    // used: with no moment source there is only the advection stage to advance.
+    const qmomkit::QmomPhaseSpaceEvolutionOptions evolutionOptions;
 
     std::vector<double> m(nMoments);
 
@@ -55,15 +55,15 @@ if (growthActive)
 
         try
         {
-            const qmomkit::QmomTransportResult result
+            const qmomkit::QmomPhaseSpaceEvolutionResult result
             (
-                qmomkit::advance_qmom_continuous
+                qmomkit::advance_qmom_advection
                 (
                     qmomCase.initial_state(),
                     t0,
                     dt,
                     growthModel,
-                    transportOptions
+                    evolutionOptions
                 )
             );
 

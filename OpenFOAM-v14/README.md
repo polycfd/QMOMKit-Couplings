@@ -24,7 +24,7 @@ nodes move along their trajectories and the moments are reconstructed from the
 advanced quadrature. Two calls in `phaseSpaceStep.H`:
 
 ```cpp
-qmomkit::advance_qmom_continuous(qmomCase.initial_state(), t, dt, growthModel, options)
+qmomkit::advance_qmom_advection(qmomCase.initial_state(), t, dt, growthModel, options)
 ```
 
 Advecting nodes instead of moments is what makes the step realizable: the
