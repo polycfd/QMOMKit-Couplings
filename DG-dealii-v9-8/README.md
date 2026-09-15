@@ -137,10 +137,6 @@ The `output/` folder contains a file with the computed L2 error and a file with 
 python plot_vtk.py <directory> <prefix>
 python plot_vtk.py build/output solutionB
 ```
-## Configuring a case
-
-(update)
-
 ## Code map
 
 | Item | Location |
