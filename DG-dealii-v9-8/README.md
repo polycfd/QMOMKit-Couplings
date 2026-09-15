@@ -1,6 +1,6 @@
 # QMOM with advection in deal.II
 
-Finite-element Discontinuous Galerkin (DG) transport in physical space (deal.II version 9.8) coupled to the Quadrature Method of Moments in phase space (QMOMKit). Ships as the solver `qmomAdvectionDG` plus five validation cases.
+Finite-element Discontinuous Galerkin (DG) transport in physical space ([deal.II](https://dealii.org/) version 9.8) coupled to the Quadrature Method of Moments in phase space ([QMOMKit](https://github.com/polycfd/QMOMKit)). Ships as the solver `qmomAdvectionDG` plus five validation cases.
 
 ## Model
 
@@ -29,30 +29,21 @@ Advecting nodes instead of moments is what makes the step realizable: the
 weights are carried unchanged and the abscissas only move, so the result cannot
 leave the realizable cone. Only the inversion of the incoming moments can fail.
 
-Moments are dimensionless (`[0 0 0 0 0 0 0]`). Operators are Lie-split:
-implicit `ddt`+`div` advection, then node advection (SSP-RK3) in phase space —
-first-order in time overall.
-
 ## Problems
 
-Six problem types (A-F) are available. All start from `X ~ N(10, 1)`; problems B, C, and D also carry a Gaussian blob in space (`σ_space = 0.25`). Nodes `n = N/2`. Problems E and F include source terms. Problems A-E have an analytical solution, and in these cases the solver reports a true absolute L2 error.
+Six problem types (A-F) are available. All start from `X ~ N(10, 1)`; problems B, C, and D also carry a Gaussian blob in space (`σ_space = 0.25`). Nodes `n = n_moments/2`. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error.
 
 | | Physical space | Phase advection | Phase moment source | Mesh | N | Δt | t_end |
 |---|---|---|---|---|---|---|---|
-| **A** | none | growth `G=ξ` | none | 5 cells, periodic | 10 | 0.0025 | 2 |
-| **B** | advection `u=1` | none | none | 200 cells, periodic | 10 | 0.0025 | 2 |
-| **C** | advection `u=1` | growth `G=ξ` | none | 200 cells, periodic | 10 | 0.0025 | 2 |
+| **A** | none | growth `G=ξ` | none | 1 cell, periodic | 10 | 0.002 | 2 |
+| **B** | advection `u=1` | none | none | 50 cells, periodic | 10 | 0.002 | 2 |
+| **C** | advection `u=1` | growth `G=ξ` | none | 50 cells, periodic | 10 | 0.002 | 2 |
 | **D** | Taylor–Green vortex | growth `G=ξ` | none | 50×50 | 6 | 0.005 | 20 |
-| **E** | none | growth `G=ξ` | multiplication `S=α ξᵏ` | 1 cell, periodic | 10 | 0.0025 | 2 |
-| **F** | none | growth `G=ξ` | binary fragmentation `S=α (2^(k-1) - 1)ξᵏ` | 1 cell, periodic | 10 | 0.0025 | 2 |
+| **E** | none | growth `G=ξ` | multiplication `S=α ξᵏ` | 1 cell, periodic | 10 | 0.002 | 2 |
+| **F** | none | growth `G=ξ` | binary fragmentation `S=α (2^(k-1) - 1)ξᵏ` | 1 cell, periodic | 10 | 0.002 | 2 |
 
 
-A validates QMOM alone: with `u = 0` the advection operator vanishes and the
-closure is exact (`M_k(t) = M_k(0) e^{kt}`). B is the converse, pure transport.
-C is both, so comparing it against B separates the two error contributions.
-D's exact solution is the initial field at the foot of the characteristic,
-traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. E validates 
-QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
+Problem A validates QMOM alone: with `u = 0` the advection operator vanishes and the closure is exact (`M_k(t) = M_k(0) e^{kt}`). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
 ## Discretisation
 
@@ -60,7 +51,7 @@ QMOM including a source term, and F showcases a QMOM-alone case with binary frag
 Standard upwind DG: volume term `u·∇φᵢ M` plus an upwind interior-face flux. No
 boundary work — A/B/C/E/F are periodic, D has zero normal velocity. DG mass matrices are block-diagonal, so no global system is assembled; each cell's local mass matrix is inverted in the `mesh_loop` copier.
 
-**Time.** Explicit SSP-RK3, with the two operators **Lie-split**: the three
+**Time.** Explicit SSP-RK3, with the **Lie-split** operator: the three
 physical-space stages run first, then `QMOMKit` is responsible for evolving the phase space. First-order in time overall — Strang splitting would be the natural upgrade.
 
 ## Boundedness
