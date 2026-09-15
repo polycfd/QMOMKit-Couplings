@@ -124,14 +124,14 @@ keyword-less `target_link_libraries` signature — see the comment in
 ## Running and output
 
 ```bash
-cd build && ./qmomadvectionDG A     # or B, C, D, E, F — defaults to A
+cd build && ./qmomAdvectionDG A     # or B, C, D, E, F — defaults to A
 ```
 
 Each step prints the L2 error of every moment. Note the high
 moments are enormous in absolute terms (`m₉ ≈ 9e16` at `t=2`), so read those
 errors relative to the moment values.
 
-The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. Run in a scratch directory. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time. 
+The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time. 
 
 ```bash
 python plot_vtk.py <directory> <prefix>
@@ -146,12 +146,12 @@ python plot_vtk.py build/output solutionB
 | Item | Location |
 |---|---|
 | Growth laws | `linear_growth_velocity()`, `no_growth_velocity()` |
-| Moment source terms | `binary_fragmentation_source()`, `multiplication_source` |
-| Initial conditions / analytical solutions | `ConstantSpaceGaussianPhase` and siblings |
-| Backward characteristic trace (D) | `SwirlGaussianSpaceGaussianPhase::trace_back_to_origin()` |
+| Moment source terms | `binary_fragmentation_source()`, `multiplication_source()` |
+| Initial conditions / analytical solutions | `ConstantPhysicalGaussianPhase` and siblings |
+| Backward characteristic trace (D) | `SwirlGaussianPhysicalGaussianPhase::trace_back_to_origin()` |
 | Velocity fields | `NoFlow`, `ConstantXFlow`, `TaylorGreenVortex` |
 | Solver, all the knobs | `QMOM1DPhaseSpace` |
-| Problem setup | constructor + `setup_mesh()` |
+| Problem setup | constructor + `setup_mesh()` + `setup_system()` |
 | **Phase-space step — the QMOMKit call** | `rk_step_phase_space()` |
 | Physical-space DG step | `rk_step_physical_space()` |
 | Limiter, safeguard, repair | `apply_zhang_shu_limiter()`, `moments_are_invertible()`, `repair_moments()` |
