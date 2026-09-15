@@ -121,7 +121,7 @@ cmake --build build -j
 keyword-less `target_link_libraries` signature — see the comment in
 `CMakeLists.txt`.
 
-## Running
+## Running and output
 
 ```bash
 cd build && ./qmomadvectionDG A     # or B, C, D, E, F — defaults to A
@@ -131,10 +131,12 @@ Each step prints the L2 error of every moment. Note the high
 moments are enormous in absolute terms (`m₉ ≈ 9e16` at `t=2`), so read those
 errors relative to the moment values.
 
-VTK files land in the working directory as `solution<P>-<n>.vtk`, one scalar
-field `u_k` per moment `M_k`. `output_frequency` controls how often; the initial
-condition and the final step are always written. Run in a scratch directory.
+The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. Run in a scratch directory. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time. 
 
+```bash
+python plot_vtk.py <directory> <prefix>
+python plot_vtk.py build/output solutionB
+```
 ## Configuring a case
 
 (update)
