@@ -124,7 +124,7 @@ keyword-less `target_link_libraries` signature — see the comment in
 ## Running
 
 ```bash
-cd build && ./qmom_kit A     # or B, C, D, E, F — defaults to A
+cd build && ./qmomadvectionDG A     # or B, C, D, E, F — defaults to A
 ```
 
 Each step prints the L2 error of every moment. Note the high
