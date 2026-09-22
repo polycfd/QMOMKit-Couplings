@@ -21,6 +21,7 @@ Description
 
 #include <qmomkit/qmomkit.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -43,6 +44,11 @@ namespace qmom
 //
 //  once it has inverted the moments into a quadrature.
 //
+//  QMOMKit evaluates G for all quadrature nodes in one call: xi holds the
+//  node coordinates packed node-major and G, already sized by the library,
+//  receives dxi/dt in the same layout. Every law below acts on each
+//  coordinate independently, so the packing does not matter here.
+//
 //  linear   G(xi) = growthRate*xi -> dM_k/dt = k*growthRate*M_k exactly, so
 //                   M_k(t) = M_k(0) exp(k*growthRate*t). The closure is exact
 //                   for this law, which is what makes problem A a clean test
@@ -59,23 +65,44 @@ inline qmomkit::PhaseSpaceVelocity newGrowthModel
 
     if (type == "linear")
     {
-        return [g](double, const std::vector<double>& xi)
+        return [g]
+        (
+            double,
+            const std::vector<double>& xi,
+            std::vector<double>& G,
+            std::size_t
+        )
         {
-            return std::vector<double>{g*xi[0]};
+            for (std::size_t i = 0; i < xi.size(); ++i)
+            {
+                G[i] = g*xi[i];
+            }
         };
     }
     else if (type == "constant")
     {
-        return [g](double, const std::vector<double>& xi)
+        return [g]
+        (
+            double,
+            const std::vector<double>&,
+            std::vector<double>& G,
+            std::size_t
+        )
         {
-            return std::vector<double>(xi.size(), g);
+            std::fill(G.begin(), G.end(), g);
         };
     }
     else if (type == "none")
     {
-        return [](double, const std::vector<double>& xi)
+        return []
+        (
+            double,
+            const std::vector<double>&,
+            std::vector<double>& G,
+            std::size_t
+        )
         {
-            return std::vector<double>(xi.size(), 0.0);
+            std::fill(G.begin(), G.end(), 0.0);
         };
     }
 
