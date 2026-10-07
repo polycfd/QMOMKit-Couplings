@@ -1027,7 +1027,7 @@ namespace QMOM
           // Store in [nq x n_mom]
           for (unsigned int m = 0; m < n_moments; ++m)
             evolved_local_moments[q * n_moments + m] =
-              evolved_moments.state.moments()[m];
+              evolved_moments.state.moment_values()[m];
         }
 
       for (unsigned int q = 0; q < fe_v.n_quadrature_points; ++q)
