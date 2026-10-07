@@ -51,7 +51,7 @@ if (growthActive)
         qmomkit::QmomCase qmomCase;
         qmomCase.moments = qmomkit::MomentSet(moments);
         qmomCase.node_count = static_cast<std::size_t>(nNodes);
-        qmomCase.options = qmomOptions;
+        qmomCase.qmom_options = qmomOptions;
 
         try
         {
@@ -76,11 +76,11 @@ if (growthActive)
             // In adaptive mode the accepted state may carry fewer nodes than
             // asked for, and then reconstructs fewer moments than the solver
             // transports. Nothing sensible can be done with a short vector.
-            if (label(result.state.moments().size()) != nMoments)
+            if (label(result.state.moment_values().size()) != nMoments)
             {
                 message =
                     "the accepted state holds "
-                  + Foam::name(result.state.moments().size())
+                  + Foam::name(result.state.moment_values().size())
                   + " moments instead of " + Foam::name(nMoments)
                   + " (the adaptive inversion dropped nodes)";
                 return false;
@@ -90,14 +90,14 @@ if (growthActive)
             // treat that like any other failure rather than storing it.
             for (label k = 0; k < nMoments; ++k)
             {
-                if (!std::isfinite(result.state.moments()[k]))
+                if (!std::isfinite(result.state.moment_values()[k]))
                 {
                     message = "the advanced moments are not finite";
                     return false;
                 }
             }
 
-            moments = result.state.moments();
+            moments = result.state.moment_values();
         }
         catch (const std::exception& e)
         {
