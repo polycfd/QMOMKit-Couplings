@@ -397,6 +397,10 @@ namespace QMOM
     , sigma(sigma)
     , n_support_points(fe.base_element(0).n_dofs_per_cell())
   {
+    // Fixed node count by default; a problem may override it below. QMOMKit's
+    // own default is adaptive.
+    qmom_options.adaptive = false;
+
     // Gaussian in phase space, no advection, linear growth in phase space
     if (problem == Problem::problem_A)
       {
@@ -607,9 +611,6 @@ namespace QMOM
   void
   QMOM1DPhaseSpace<dim>::configure_qmom()
   {
-    // Define qmom inversion options
-    qmom_options.adaptive = false;
-
     // Define qmom output options
     output_options.directory     = "./output";
     output_options.write_moments = true;
@@ -1027,7 +1028,7 @@ namespace QMOM
           // Store in [nq x n_mom]
           for (unsigned int m = 0; m < n_moments; ++m)
             evolved_local_moments[q * n_moments + m] =
-              evolved_moments.state.moments()[m];
+              evolved_moments.state.moment_values()[m];
         }
 
       for (unsigned int q = 0; q < fe_v.n_quadrature_points; ++q)
