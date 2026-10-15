@@ -970,24 +970,29 @@ namespace QMOM
           for (unsigned int m = 0; m < n_moments; ++m)
             moment_slice[m] = local_moments[q][m];
 
-          // Initialize qmom state (carries the moments and reconstruction
-          // policy between time steps)
-          qmomkit::QmomState state =
+          // Get the qmom case (set of moments, node counts, and options)
+          const qmomkit::QmomCase case_slice =
             qmomkit::QmomCase{qmomkit::MomentSet(moment_slice),
                               n_nodes,
                               qmom_options,
-                              std::nullopt}
-              .initial_state();
+                              std::nullopt};
+
+          // Get the qmom candidate so that the moments can be edited/evolved
+          qmomkit::QmomStateCandidate candidate =
+            case_slice.state_candidate(qmomkit::MomentSet(moment_slice),
+                                       transport_options.realizability_policy);
 
           // Advance all moments of each quadrature point
           // (includes both continuous and discontinuous sources)
           const qmomkit::QmomPhaseSpaceEvolutionResult evolved_moments =
-            qmomkit::advance_qmom_phase_space(state,
+            qmomkit::advance_qmom_phase_space(*candidate.state,
                                               time,
                                               current_step,
                                               phase_space_velocity,
                                               source,
                                               transport_options);
+
+          // Verify if the evolved moments are realizable
           if (!evolved_moments.ok())
             throw std::runtime_error(evolved_moments.message);
 
@@ -1645,7 +1650,7 @@ main(int argc, char *argv[])
       /// Final simulation time
       const double time_end = 2;
       /// Time step
-      const double time_step = 0.002;
+      const double time_step = 0.0002;
       /// Mean used in normal distribution (generate initial moments)
       const double mu = 10;
       /// Standard deviation used in normal distribution (generate initial
