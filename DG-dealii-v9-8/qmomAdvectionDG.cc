@@ -670,20 +670,7 @@ namespace QMOM
       fe_v.get_function_values(solution_stages[0], moments_current_stage);
     // TODO add equation
     else if (stage == 2)
-      {
-        std::vector<Vector<double>> temporary_moments_0(
-          fe_v.n_quadrature_points, Vector<double>(n_moments));
-        fe_v.get_function_values(solution_t, temporary_moments_0);
-
-        std::vector<Vector<double>> temporary_moments_1(
-          fe_v.n_quadrature_points, Vector<double>(n_moments));
-        fe_v.get_function_values(solution_stages[1], temporary_moments_1);
-
-        for (unsigned int q = 0; q < moments_current_stage.size(); ++q)
-          for (unsigned int i = 0; i < moments_current_stage[q].size(); ++i)
-            moments_current_stage[q][i] = 0.75 * temporary_moments_0[q][i] +
-                                          0.25 * temporary_moments_1[q][i];
-      }
+      fe_v.get_function_values(solution_stages[1], moments_current_stage);
     else
       AssertThrow(false, ExcMessage("Invalid stage."));
 
@@ -811,31 +798,10 @@ namespace QMOM
         }
       else if (stage == 2)
         {
-          // Loop on both sides to gather both sides with the RK scheme
-          // Right now this is really really not elegant. I need to finda
-          // cleaner way to do this with temporary solution vectors.
-          for (unsigned int s = 0; s < 2; ++s)
-            {
-              std::vector<Vector<double>> temporary_moments_0(
-                n_q_points, Vector<double>(n_moments));
-              fe_iv.get_fe_face_values(s).get_function_values(
-                solution_t, temporary_moments_0);
-
-              std::vector<Vector<double>> temporary_moments_1(
-                n_q_points, Vector<double>(n_moments));
-              fe_iv.get_fe_face_values(s).get_function_values(
-                solution_stages[1], temporary_moments_1);
-
-              std::vector<Vector<double>> &moments_current_stage =
-                s == 0 ? values_here : values_there;
-
-              for (unsigned int q = 0; q < moments_current_stage.size(); ++q)
-                for (unsigned int i = 0; i < moments_current_stage[q].size();
-                     ++i)
-                  moments_current_stage[q][i] =
-                    0.75 * temporary_moments_0[q][i] +
-                    0.25 * temporary_moments_1[q][i];
-            }
+          fe_iv.get_fe_face_values(0).get_function_values(solution_stages[1],
+                                                          values_here);
+          fe_iv.get_fe_face_values(1).get_function_values(solution_stages[1],
+                                                          values_there);
         }
       else
         AssertThrow(false, ExcMessage("Invalid stage."));
