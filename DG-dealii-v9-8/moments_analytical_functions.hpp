@@ -115,7 +115,7 @@ public:
  * \f$X \sim \mathcal{N}(\mu, \sigma^2)\f$. Each vector component @p k
  * returns the \f$k\f$-th raw moment scaled by an exponential in time:
  * \f[
- *   M_k(x,t) = \mathrm{E}[X^{k}] \, e^{k\,t}
+ *   M_k(x,t) = \mathrm{E}[X^{k}] \, e^{a * k\,t}
  * \f]
  * where the raw moment of order \f$n = k\f$ is computed from the
  * general formula for a Gaussian distribution:
@@ -129,6 +129,9 @@ public:
  * making the class suitable both as an initial condition and as an
  * analytical reference solution. The time is obtained from the base
  * class via Function::get_time().
+ *
+ * The parameter a is a constant that multiplies the linear phase velocity field
+ * as in G (\xi) = a * \xi. In this example, a = 0.01.
  *
  * @tparam dim Spatial dimension of the mesh.
  */
@@ -160,7 +163,7 @@ public:
    *
    * @param p         Spatial point (unused — the field is uniform).
    * @param component Index selecting which moment to return.
-   * @return \f$\mathrm{E}[X^{k}] \, e^{k\,t}\f$ where
+   * @return \f$\mathrm{E}[X^{k}] \, e^{a*k\,t}\f$ where
    *         \f$k\f$ = @p component and \f$t\f$ is the current time.
    */
   virtual double
@@ -196,7 +199,7 @@ public:
     const double L = 2.0;
     shifted_p[0]   = shifted_p[0] - L * std::floor((shifted_p[0] + 1.0) / L);
 
-    return moment * std::exp(static_cast<double>(n) * t) *
+    return moment * std::exp(0.01 * static_cast<double>(n) * t) *
            std::exp(-shifted_p.norm_square() /
                     (2.0 * sigma_physical * sigma_physical));
   }
