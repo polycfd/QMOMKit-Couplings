@@ -6,20 +6,20 @@ Quadrature Method of Moments in phase space (QMOMKit). Ships as the solver
 
 ## Model
 
-A number density `f(x, ξ, t)` obeys
+A number density $n(x, \xi, t)$ obeys
 
-```
-  ∂f/∂t + ∇ₓ·( u f ) + ∂/∂ξ ( G(ξ) f ) = 0
-```
-
-The raw moments `M_k = ∫ ξᵏ f dξ` are transported instead:
-
-```
-  ∂M_k/∂t + ∇ₓ·( u M_k ) = S_k
+```math
+  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
 ```
 
-QMOMKit closes `S_k` by Wheeler inversion of the first `2n` moments. Rather
-than integrate `S_k`, the phase-space half advances the quadrature itself: the
+The raw moments $M_k = \int \xi_k \, n \, d\xi$ are transported instead:
+
+```math
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k
+```
+
+QMOMKit closes $S_k$ by Wheeler inversion of the first $2n$ moments. Rather
+than integrate $S_k$, the phase-space half advances the quadrature itself: the
 nodes move along their trajectories and the moments are reconstructed from the
 advanced quadrature. Two calls in `phaseSpaceStep.H`:
 
@@ -37,21 +37,21 @@ first-order in time overall.
 
 ## Problems
 
-One case per problem under `run/`. All start from `X ~ N(10, 1)`; B, C, D also
-carry a Gaussian blob in space (`σ_space = 0.25`). Nodes `n = N/2`. Every
+One case per problem under `run/`. All start from $X \sim N(10, 1)$; B, C, D also
+carry a Gaussian blob in space ($\sigma_{space} = 0.25$). Nodes $n = N/2$. Every
 problem has an analytical solution, so the solver reports a true L2 error, both
 absolute and relative — the relative values are the meaningful ones, since the
 high moments are enormous in absolute terms.
 
-| | Physical space | Phase space | Mesh | N | Δt | t_end |
-|---|---|---|---|---|---|---|
-| **A** | none | growth `G=ξ` | 5 cells, periodic | 10 | 0.0025 | 2 |
-| **B** | advection `u=1` | none | 200 cells, periodic | 10 | 0.0025 | 2 |
-| **C** | advection `u=1` | growth `G=ξ` | 200 cells, periodic | 10 | 0.0025 | 2 |
-| **D** | Taylor–Green vortex | growth `G=ξ` | 50×50 | 6 | 0.005 | 20 |
+|       | Physical space      | Phase space    | Mesh                | N   | $\Delta t$ | $t_{end}$ |
+| ----- | ------------------- | -------------- | ------------------- | --- | ---------- | ----- |
+| **A** | none                | growth $G=\xi$ | 5 cells, periodic   | 10  | 0.0025     | 2     |
+| **B** | advection $u=1$     | none           | 200 cells, periodic | 10  | 0.0025     | 2     |
+| **C** | advection $u=1$     | growth $G=0.1$ | 200 cells, periodic | 10  | 0.0025     | 2     |
+| **D** | Taylor–Green vortex | growth $G=\xi$ | 50×50               | 6   | 0.005      | 20    |
 
-A validates QMOM alone: with `u = 0` the advection operator vanishes and the
-closure is exact (`M_k(t) = M_k(0) e^{kt}`). B is the converse, pure transport.
+A validates QMOM alone: with $u = 0$ the advection operator vanishes and the
+closure is exact ( $M_k(t) = M_k(0) \, \exp (kt)$ ). B is the converse, pure transport.
 C is both, so comparing it against B separates the two error contributions.
 D's exact solution is the initial field at the foot of the characteristic,
 traced backwards with RK4 in `exactSolution::traceBackToOrigin()`.
@@ -64,16 +64,16 @@ vector, and the realizable set is convex), so it is the default everywhere. A
 per-moment limiter distorts ratios between moments and can leave the realizable
 cone.
 
-| `div(phi,M)` | realizability |
-|---|---|
-| `Gauss upwind` | safe by construction |
+| `div(phi,M)`            | realizability                      |
+| ----------------------- | ---------------------------------- |
+| `Gauss upwind`          | safe by construction               |
 | `Gauss limitedLinear 1` | held on A–D, but limits per moment |
-| `Gauss vanLeer` | held on A–D, but limits per moment |
-| `Gauss linear` | unbounded |
+| `Gauss vanLeer`         | held on A–D, but limits per moment |
+| `Gauss linear`          | unbounded                          |
 
 The higher-order schemes are noticeably more accurate but carry the caveat
 above — switch with eyes open, and watch for the repair message. What `upwind`
-buys is boundedness for free: no over- or undershoot in `M₀`, and `∫M₀ dV`
+buys is boundedness for free: no over- or undershoot in $M_0$, and $\int M_0 dV$
 conserved to round-off on a periodic box. The price is peak decay from the
 numerical diffusion.
 
@@ -83,8 +83,8 @@ default (on for D):
 - `qmomOptions/adaptive` — Wheeler drops nodes instead of failing. Also fires
   on merely ill-conditioned sequences.
 - `repair/repairBrokenCells` — rebuilds a non-invertible cell from the nominal
-  shape rescaled to its `m₀` (`m₀` conserved, higher moments overwritten), then
-  retries once. `repair/m0Floor` additionally clamps `m₀`. A run leaning on this
+  shape rescaled to its $m_0$ ($m_0$ conserved, higher moments overwritten), then
+  retries once. `repair/m0Floor` additionally clamps $m_0$. A run leaning on this
   is under-resolved and says so.
 
 Without either, a failed inversion is a `FatalError` naming the cell.
@@ -148,11 +148,11 @@ boundary work) and keeps the discrete divergence at round-off.
 
 ## Code map
 
-| Item | Location |
-|---|---|
-| Growth laws, velocity fields, exact solutions | `qmomModels.H` |
-| Field and dictionary setup | `createFields.H` |
-| Physical-space step | `advectionStep.H` |
-| Phase-space step (QMOMKit call, repair) | `phaseSpaceStep.H` |
-| Error measurement | `momentErrors.H` |
-| Time loop and splitting | `qmomAdvectionFoam.C` |
+| Item                                          | Location              |
+| --------------------------------------------- | --------------------- |
+| Growth laws, velocity fields, exact solutions | `qmomModels.H`        |
+| Field and dictionary setup                    | `createFields.H`      |
+| Physical-space step                           | `advectionStep.H`     |
+| Phase-space step (QMOMKit call, repair)       | `phaseSpaceStep.H`    |
+| Error measurement                             | `momentErrors.H`      |
+| Time loop and splitting                       | `qmomAdvectionFoam.C` |

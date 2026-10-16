@@ -93,15 +93,15 @@ free: it also fires on merely ill-conditioned sequences, inflating problem A's
 high-moment error by 12% ($m_2$) to 68% ($m_9$). Off by default; on for D.
 
 **Repair.** `repair_broken_cells` rewrites a cell whose moments cannot be
-inverted with the nominal phase-space shape rescaled to the $m_{\theta}$ it already
-holds — realizable by construction, since the realizable set is a cone. $m_{\theta}$ is
-conserved exactly; the higher moments are overwritten. $m_{\theta, floor}$ additionally
-clamps $m_{\theta}$. This cannot fail, which is why it is the last line of defence, but
+inverted with the nominal phase-space shape rescaled to the $m_0$ it already
+holds — realizable by construction, since the realizable set is a cone. $m_0$ is
+conserved exactly; the higher moments are overwritten. $m_{0, floor}$ additionally
+clamps $m_0$. This cannot fail, which is why it is the last line of defence, but
 a run leaning on it is under-resolved.
 
-One failure mode none of this fixes: if $m_{\theta}$ decays below QMOMKit's `cutoff`
+One failure mode none of this fixes: if $m_0$ decays below QMOMKit's `cutoff`
 ($10^{-30}$) in the far field, even the cell average is unusable. With
-$\sigma_{space} = 0.25$ the smallest $m_{\theta}$ on the mesh is $\approx 1.3 \times 10^{-9}$; at $\sigma_{space} = 0.1$
+$\sigma_{space} = 0.25$ the smallest $m_0$ on the mesh is $\approx 1.3 \times 10^{-9}$; at $\sigma_{space} = 0.1$
 the initial condition is already unrepresentable at $2 \times 10^{-56}$.
 
 ## Building
