@@ -4,7 +4,7 @@ Finite-element Discontinuous Galerkin (DG) transport in physical space ([deal.II
 
 ## Model
 
-A number density `f(x, ξ, t)` obeys
+A number density $f(x, \xi, t)$ obeys
 
 ```
   ∂f/∂t + ∇ₓ·( u f ) + ∂/∂ξ ( G(ξ) f ) = 0
