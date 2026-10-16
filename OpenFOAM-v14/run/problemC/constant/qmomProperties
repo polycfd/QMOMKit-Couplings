@@ -9,16 +9,18 @@ FoamFile
 
 // Problem C - both operators: the blob advects while its moments grow.
 //
-// Identical to problem B except that the phase-space growth of problem A is
-// switched back on, so this is the actual coupled problem. The exact solution
-// is the translated blob multiplied by e^(kt) on moment k.
+// Identical to problem B except that a constant phase-space growth G = 0.1 is
+// switched on, so this is the actual coupled problem. A constant G shifts the
+// distribution rigidly, X(t) ~ N(10 + 0.1 t, 1), and the closure is exact
+// (S_k = k G M_(k-1)). The exact solution is the translated blob carrying the
+// raw moments of that shifted Gaussian.
 
 nMoments        10;
 
 phaseSpace
 {
-    growthModel     linear;
-    growthRate      1;
+    growthModel     constant;
+    growthRate      0.1;
 }
 
 qmomOptions

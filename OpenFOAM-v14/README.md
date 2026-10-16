@@ -53,6 +53,10 @@ high moments are enormous in absolute terms.
 A validates QMOM alone: with $u = 0$ the advection operator vanishes and the
 closure is exact ( $M_k(t) = M_k(0) \, \exp (kt)$ ). B is the converse, pure transport.
 C is both, so comparing it against B separates the two error contributions.
+Its constant growth shifts the distribution rigidly to `N(10 + 0.1t, 1)`, so
+the exact solution is the translated blob carrying the moments of that
+Gaussian. The phase-space step is exact for this law and commutes with the
+advection, so C's relative error per moment should match B's.
 D's exact solution is the initial field at the foot of the characteristic,
 traced backwards with RK4 in `exactSolution::traceBackToOrigin()`.
 

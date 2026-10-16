@@ -53,7 +53,9 @@ namespace qmom
 //                   M_k(t) = M_k(0) exp(k*growthRate*t). The closure is exact
 //                   for this law, which is what makes problem A a clean test
 //                   of the QMOM machinery on its own.
-//  constant G(xi) = growthRate    -> dM_k/dt = k*growthRate*M_(k-1).
+//  constant G(xi) = growthRate    -> dM_k/dt = k*growthRate*M_(k-1). The
+//                   distribution is shifted rigidly, f(xi, t) = f(xi - g t, 0),
+//                   and the closure is exact for this law too.
 //  none     G(xi) = 0             -> the moments are untouched in phase space.
 inline qmomkit::PhaseSpaceVelocity newGrowthModel
 (
@@ -112,19 +114,6 @@ inline qmomkit::PhaseSpaceVelocity newGrowthModel
         << exit(FatalError);
 
     return nullptr;
-}
-
-
-//- Exponential factor by which the growth law multiplies moment k over a
-//  time t. Only the linear law has a closed form; it is the only one for
-//  which an analytical solution is offered.
-inline scalar growthFactor(const word& type, const scalar rate, const label k, const scalar t)
-{
-    if (type == "linear")
-    {
-        return std::exp(scalar(k)*rate*t);
-    }
-    return 1;
 }
 
 
@@ -193,9 +182,10 @@ public:
 
 //- Analytical raw moments M_k(x, t) of the four reference problems.
 //
-//  Every problem starts from X ~ N(mu, sigma) in phase space, so the phase
-//  space part is always E[X^k]*exp(k*rate*t) (QMOMKit supplies E[X^k]); the
-//  types differ only in the spatial factor:
+//  Every problem starts from X ~ N(mu, sigma) in phase space (QMOMKit
+//  supplies E[X^k]) and the growth law does not depend on x, so M_k is the
+//  product of a phase-space factor, given by phaseMoment(), and a spatial
+//  factor. The types differ only in the spatial factor:
 //
 //      uniform          1                     (problem A)
 //      advectedGaussian a Gaussian blob rigidly translated by u = U0 e_x and
@@ -336,12 +326,47 @@ public:
         return 1;
     }
 
+    //- Phase-space factor of moment k at time t, i.e. E[X(t)^k]
+    //
+    //  linear   X(t) = X e^(rate t), so E[X^k] e^(k rate t).
+    //  constant X(t) = X + rate t, a rigid shift, so by the binomial theorem
+    //           sum_j C(k,j) E[X^j] (rate t)^(k-j). Valid for any initial
+    //           distribution, not only the Gaussian.
+    //  none     E[X^k], unchanged.
+    scalar phaseMoment(const label k, const scalar t) const
+    {
+        if (growthType_ == "linear")
+        {
+            return phaseMoments_[k]*std::exp(scalar(k)*growthRate_*t);
+        }
+        else if (growthType_ == "constant")
+        {
+            const scalar shift = growthRate_*t;
+
+            // Walk j from k down to 0 so that the binomial coefficient
+            // C(k,j) and the power shift^(k-j) are both built incrementally
+            scalar sum = 0;
+            scalar binomial = 1;
+            scalar shiftPower = 1;
+
+            for (label j = k; j >= 0; --j)
+            {
+                sum += binomial*phaseMoments_[j]*shiftPower;
+
+                binomial *= scalar(j)/scalar(k - j + 1);
+                shiftPower *= shift;
+            }
+
+            return sum;
+        }
+
+        return phaseMoments_[k];
+    }
+
     //- M_k(x, t)
     scalar value(const label k, const point& p, const scalar t) const
     {
-        return phaseMoments_[k]
-              *growthFactor(growthType_, growthRate_, k, t)
-              *spatialFactor(p, t);
+        return phaseMoment(k, t)*spatialFactor(p, t);
     }
 };
 
