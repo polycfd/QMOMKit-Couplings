@@ -433,10 +433,10 @@ namespace QMOM
     else if (problem == Problem::problem_C)
       {
         // Function used to compute analytical moments
-        moments_function = std::make_shared<GaussianPhysicalGaussianPhase<dim>>(
+        moments_function = std::make_shared<GaussianPhysicalGaussianPhaseConstant<dim>>(
           n_moments, mu, sigma, sigma_space);
         // Advection term
-        phase_space_velocity = linear_growth_velocity();
+        phase_space_velocity = constant_growth_velocity();
         // Source term
         source = zero_source;
         // Velocity in physical space

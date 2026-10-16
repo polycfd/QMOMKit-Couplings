@@ -23,8 +23,29 @@ no_growth_velocity()
 }
 
 /**
+ * @brief Constant growth velocity
+ * G(\xi) = 0.1
+ *
+ * @param[in] t Current time (unused)
+ * @param[in] xi Phase space vector
+ *
+ * @return Vector for constant growth velocity
+ */
+inline qmomkit::PhaseSpaceVelocity
+constant_growth_velocity()
+{
+  return [](const double /*t*/,
+            const std::vector<double> &xi,
+            std::vector<double>       &velocity,
+            unsigned int) {
+    for (unsigned int node = 0; node < xi.size(); ++node)
+      velocity[node] = 0.1;
+  };
+}
+
+/**
  * @brief Linear growth velocity
- * G(\xi) = 0.01 * \xi
+ * G(\xi) = \xi
  *
  * @param[in] t Current time (unused)
  * @param[in] xi Phase space vector
@@ -39,7 +60,7 @@ linear_growth_velocity()
             std::vector<double>       &velocity,
             unsigned int) {
     for (unsigned int node = 0; node < xi.size(); ++node)
-      velocity[node] = 0.01 * xi[node];
+      velocity[node] = xi[node];
   };
 }
 
