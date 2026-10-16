@@ -4,20 +4,20 @@ Finite-element Discontinuous Galerkin (DG) transport in physical space ([deal.II
 
 ## Model
 
-A number density $f(x, \xi, t)$ obeys
+A number density $n(x, \xi, t)$ obeys
 
-```
-  ∂f/∂t + ∇ₓ·( u f ) + ∂/∂ξ ( G(ξ) f ) = 0
-```
-
-The raw moments `M_k = ∫ ξᵏ f dξ` are transported instead:
-
-```
-  ∂M_k/∂t + ∇ₓ·( u M_k ) = S_k
+```math
+  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} (G(\xi)\, n) = 0
 ```
 
-QMOMKit closes `S_k` by Wheeler inversion of the first `2n` moments. Rather
-than integrate `S_k`, the phase-space half advances the quadrature itself: the
+The raw moments $M_k = \int \xi^k \, n d\xi$ are transported instead:
+
+```math
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\matbf{u} \, M_k) = S_k
+```
+
+QMOMKit closes $S_k$ by Wheeler inversion of the first $2n$ moments. Rather
+than integrate $S_k$, the phase-space half advances the quadrature itself: the
 nodes move along their trajectories and the moments are reconstructed from the
 advanced quadrature. The phase-space evolution is done by the following call:
 
@@ -31,17 +31,16 @@ leave the realizable cone. Only the inversion of the incoming moments can fail.
 
 ## Problems
 
-Six problem types (A-F) are available. All start from `X ~ N(10, 1)`; problems B, C, and D also carry a Gaussian blob in space (`σ_space = 0.25`). Nodes `n = n_moments/2`. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error.
+Six problem types (A-F) are available. All start from $X ~ N(10, 1)$; problems B, C, and D also carry a Gaussian blob in space ($σ_space = 0.25$). Nodes $n = n_moments/2$. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error. Problems A, D, and F have a linear growth velocity in phase space, while problem C has a constant growth velocity.
 
-| | Physical space | Phase advection | Phase moment source | Mesh | N | Δt | t_end |
-|---|---|---|---|---|---|---|---|
-| **A** | none | growth `G=ξ` | none | 1 cell, periodic | 10 | 0.002 | 2 |
-| **B** | advection `u=1` | none | none | 50 cells, periodic | 10 | 0.002 | 2 |
-| **C** | advection `u=1` | growth `G=ξ` | none | 50 cells, periodic | 10 | 0.002 | 2 |
-| **D** | Taylor–Green vortex | growth `G=ξ` | none | 50×50 | 6 | 0.005 | 20 |
-| **E** | none | growth `G=ξ` | multiplication `S=α ξᵏ` | 1 cell, periodic | 10 | 0.002 | 2 |
-| **F** | none | growth `G=ξ` | binary fragmentation `S=α (2^(k-1) - 1)ξᵏ` | 1 cell, periodic | 10 | 0.002 | 2 |
-
+|       | Physical space      | Phase advection | Phase moment source                        | Mesh               | N   | Δt    | t_end |
+| ----- | ------------------- | --------------- | ------------------------------------------ | ------------------ | --- | ----- | ----- |
+| **A** | none                | growth $G=ξ$    | none                                       | 1 cell, periodic   | 10  | 0.002 | 2     |
+| **B** | advection $u=1$     | none            | none                                       | 50 cells, periodic | 10  | 0.002 | 2     |
+| **C** | advection $u=1$     | growth $G=0.1$  | none                                       | 50 cells, periodic | 10  | 0.002 | 2     |
+| **D** | Taylor–Green vortex | growth $G=ξ$    | none                                       | 50×50              | 6   | 0.005 | 20    |
+| **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \, \xi^k$         | 1 cell, periodic   | 10  | 0.002 | 2     |
+| **F** | none                | growth $G=ξ$    | binary fragmentation `S=α (2^(k-1) - 1)ξᵏ` | 1 cell, periodic   | 10  | 0.002 | 2     |
 
 Problem A validates QMOM alone: with `u = 0` the advection operator vanishes and the closure is exact (`M_k(t) = M_k(0) e^{kt}`). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
@@ -58,15 +57,15 @@ physical-space stages run first, then `QMOMKit` is responsible for evolving the 
 
 Unlimited DG overshoots at steep gradients (problem B: +2.1% above and −59%
 below the initial range after 800 steps), and moments that leave their range
-tend to leave the *realizable* cone, at which point the inversion has no
+tend to leave the _realizable_ cone, at which point the inversion has no
 solution and the run aborts. Four knobs, all members of `QMOM1DPhaseSpace`:
 
-| knob | default | what it does |
-|---|---|---|
-| `use_limiter` | `true` | Zhang–Shu limiter after every advection RK stage |
-| `enforce_realizability` | `true` | limiter also guarantees the state is invertible |
-| `qmom_options.adaptive` | `false` (`true` for D) | Wheeler drops nodes instead of failing |
-| `repair_broken_cells` | `false` | last-resort rebuild of non-invertible cells |
+| knob                    | default                | what it does                                     |
+| ----------------------- | ---------------------- | ------------------------------------------------ |
+| `use_limiter`           | `true`                 | Zhang–Shu limiter after every advection RK stage |
+| `enforce_realizability` | `true`                 | limiter also guarantees the state is invertible  |
+| `qmom_options.adaptive` | `false` (`true` for D) | Wheeler drops nodes instead of failing           |
+| `repair_broken_cells`   | `false`                | last-resort rebuild of non-invertible cells      |
 
 **Limiter.** Each cell polynomial is squeezed towards its own cell average,
 `ũ_K = ū_K + θ(u_K − ū_K)`, with `θ` the largest factor keeping it inside the
@@ -83,7 +82,7 @@ combination, and the realizable set is convex.
 **Realizability safeguard.** Halves `θ` until the state can actually be
 inverted, falling back on the cell average. Prints `realizability safeguard
 active in N cells` when it engages; silence is the normal case. The gate is
-`compute_qmom(...).ok()`, *not* `check_realizability()` — the latter rejects
+`compute_qmom(...).ok()`, _not_ `check_realizability()` — the latter rejects
 even the exact analytical ten-moment Gaussian sequence, and gating on it
 flattens the solution onto its cell averages (error 0.0118 → 0.209).
 
@@ -131,28 +130,29 @@ Each step prints the L2 error of every moment. Note the high
 moments are enormous in absolute terms (`m₉ ≈ 9e16` at `t=2`), so read those
 errors relative to the moment values.
 
-The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time. 
+The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time.
 
 ```bash
 python plot_vtk.py <directory> <prefix>
 python plot_vtk.py build/output solutionB
 ```
+
 ## Code map
 
-| Item | Location |
-|---|---|
-| Growth laws | `linear_growth_velocity()`, `no_growth_velocity()` |
-| Moment source terms | `binary_fragmentation_source()`, `multiplication_source()` |
-| Initial conditions / analytical solutions | `ConstantPhysicalGaussianPhase` and siblings |
-| Backward characteristic trace (D) | `SwirlGaussianPhysicalGaussianPhase::trace_back_to_origin()` |
-| Velocity fields | `NoFlow`, `ConstantXFlow`, `TaylorGreenVortex` |
-| Solver, all the knobs | `QMOM1DPhaseSpace` |
-| Problem setup | constructor + `setup_mesh()` + `setup_system()` |
-| **Phase-space step — the QMOMKit call** | `rk_step_phase_space()` |
-| Physical-space DG step | `rk_step_physical_space()` |
-| Limiter, safeguard, repair | `apply_zhang_shu_limiter()`, `moments_are_invertible()`, `repair_moments()` |
-| Time loop and splitting | `solve()` |
-| Error measurement | `calculate_L2_error()` |
+| Item                                      | Location                                                                    |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| Growth laws                               | `linear_growth_velocity()`, `no_growth_velocity()`                          |
+| Moment source terms                       | `binary_fragmentation_source()`, `multiplication_source()`                  |
+| Initial conditions / analytical solutions | `ConstantPhysicalGaussianPhase` and siblings                                |
+| Backward characteristic trace (D)         | `SwirlGaussianPhysicalGaussianPhase::trace_back_to_origin()`                |
+| Velocity fields                           | `NoFlow`, `ConstantXFlow`, `TaylorGreenVortex`                              |
+| Solver, all the knobs                     | `QMOM1DPhaseSpace`                                                          |
+| Problem setup                             | constructor + `setup_mesh()` + `setup_system()`                             |
+| **Phase-space step — the QMOMKit call**   | `rk_step_phase_space()`                                                     |
+| Physical-space DG step                    | `rk_step_physical_space()`                                                  |
+| Limiter, safeguard, repair                | `apply_zhang_shu_limiter()`, `moments_are_invertible()`, `repair_moments()` |
+| Time loop and splitting                   | `solve()`                                                                   |
+| Error measurement                         | `calculate_L2_error()`                                                      |
 
 ## Known limitations
 
@@ -165,4 +165,3 @@ python plot_vtk.py build/output solutionB
   linearly with `t`, so late steps are markedly slower than early ones.
 - `print_solution_vector()` exists as a debugging aid; its call site in
   `solve()` is commented out.
-
