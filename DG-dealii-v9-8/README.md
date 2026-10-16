@@ -33,7 +33,7 @@ leave the realizable cone. Only the inversion of the incoming moments can fail.
 
 Six problem types (A-F) are available. All start from $X \sim N(10, 1)$; problems B, C, and D also carry a Gaussian blob in space ($\sigma_{space} = 0.25$). Nodes $n = n_{moments}/2$. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error. Problems A, D, and F have a linear growth velocity in phase space, while problem C has a constant growth velocity.
 
-|       | Physical space      | Phase advection | Phase moment source                                | Mesh               | $N$ | $\delta t$ | t_end |
+|       | Physical space      | Phase advection | Phase moment source                                | Mesh               | $N$ | $\Delta t$ | t_end |
 | ----- | ------------------- | --------------- | -------------------------------------------------- | ------------------ | --- | ---------- | ----- |
 | **A** | none                | growth $G=ξ$    | none                                               | 1 cell, periodic   | 10  | 0.002      | 2     |
 | **B** | advection $u=1$     | none            | none                                               | 50 cells, periodic | 10  | 0.002      | 2     |
@@ -42,7 +42,7 @@ Six problem types (A-F) are available. All start from $X \sim N(10, 1)$; problem
 | **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \xi^k$                    | 1 cell, periodic   | 10  | 0.002      | 2     |
 | **F** | none                | growth $G=ξ$    | binary fragmentation $S=\alpha (2^{k-1} - 1)\xi^k$ | 1 cell, periodic   | 10  | 0.002      | 2     |
 
-Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \, \exp^{kt}$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
+Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \, \exp (kt)$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
 ## Discretisation
 
@@ -100,8 +100,8 @@ clamps $m_{\theta}$. This cannot fail, which is why it is the last line of defen
 a run leaning on it is under-resolved.
 
 One failure mode none of this fixes: if $m_{\theta}$ decays below QMOMKit's `cutoff`
-($10 \times 10^{-30}$) in the far field, even the cell average is unusable. With
-$\sigma_{space} = 0.25$ the smallest $m_{\theta}$ on the mesh is ~$1.3 \times 10^{-9}$; at $\sigma_{space} = 0.1$
+($10^{-30}$) in the far field, even the cell average is unusable. With
+$\sigma_{space} = 0.25$ the smallest $m_{\theta}$ on the mesh is $\approx 1.3 \times 10^{-9}$; at $\sigma_{space} = 0.1$
 the initial condition is already unrepresentable at $2 \times 10^{-56}$.
 
 ## Building
@@ -157,7 +157,7 @@ python plot_vtk.py build/output solutionB
 ## Known limitations
 
 - Lie splitting, so first-order in time regardless of the SSP-RK3 stages.
-- No CFL control: $\delta t$ is fixed per problem.
+- No CFL control: $\Delta t$ is fixed per problem.
 - The limiter is written for `FE_DGQ(1)`, whose nodal points coincide with the
   Gauss–Lobatto points the Zhang–Shu argument needs. A higher degree would need
   a larger test-point set.
