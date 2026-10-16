@@ -33,16 +33,16 @@ leave the realizable cone. Only the inversion of the incoming moments can fail.
 
 Six problem types (A-F) are available. All start from $X \sim N(10, 1)$; problems B, C, and D also carry a Gaussian blob in space ($\sigma_{space} = 0.25$). Nodes $n = n_{moments}/2$. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error. Problems A, D, and F have a linear growth velocity in phase space, while problem C has a constant growth velocity.
 
-|       | Physical space      | Phase advection | Phase moment source                                | Mesh               | $N$ | $\Delta t$ | t_end |
-| ----- | ------------------- | --------------- | -------------------------------------------------- | ------------------ | --- | ---------- | ----- |
-| **A** | none                | growth $G=ξ$    | none                                               | 1 cell, periodic   | 10  | 0.002      | 2     |
-| **B** | advection $u=1$     | none            | none                                               | 50 cells, periodic | 10  | 0.002      | 2     |
-| **C** | advection $u=1$     | growth $G=0.1$  | none                                               | 50 cells, periodic | 10  | 0.002      | 2     |
-| **D** | Taylor–Green vortex | growth $G=ξ$    | none                                               | 50×50              | 6   | 0.005      | 20    |
-| **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \xi^k$                    | 1 cell, periodic   | 10  | 0.002      | 2     |
-| **F** | none                | growth $G=ξ$    | binary fragmentation $S=\alpha (2^{k-1} - 1)\xi^k$ | 1 cell, periodic   | 10  | 0.002      | 2     |
+|       | Physical space      | Phase advection | Phase moment source                                | Mesh               | $N$ | $\Delta t$ | $t_{end}$ |
+| ----- | ------------------- | --------------- | -------------------------------------------------- | ------------------ | --- | ---------- | --------- |
+| **A** | none                | growth $G=ξ$    | none                                               | 1 cell, periodic   | 10  | 0.002      | 2         |
+| **B** | advection $u=1$     | none            | none                                               | 50 cells, periodic | 10  | 0.002      | 2         |
+| **C** | advection $u=1$     | growth $G=0.1$  | none                                               | 50 cells, periodic | 10  | 0.002      | 2         |
+| **D** | Taylor–Green vortex | growth $G=ξ$    | none                                               | 50×50              | 6   | 0.005      | 20        |
+| **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \xi^k$                    | 1 cell, periodic   | 10  | 0.002      | 2         |
+| **F** | none                | growth $G=ξ$    | binary fragmentation $S=\alpha (2^{k-1} - 1)\xi^k$ | 1 cell, periodic   | 10  | 0.002      | 2         |
 
-Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \, \exp (kt)$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
+Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \exp (kt)$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
 ## Discretisation
 
@@ -70,7 +70,7 @@ solution and the run aborts. Four knobs, all members of `QMOM1DPhaseSpace`:
 **Limiter.** Each cell polynomial is squeezed towards its own cell average,
 $\tilde{u}_K = \tilde{u}_K + \theta (u_K − \tilde{u}_K)$, with $\theta$ the largest factor keeping it inside the
 pointwise range the solution had entering the timestep. The average is
-untouched, so the limiter is exactly conservative (verified to 6e-16), and
+untouched, so the limiter is exactly conservative (verified to $6 \times 10^(-16}$), and
 $\theta = 1$ in smooth regions. Result on B: zero overshoot and undershoot, at a
 modest accuracy cost (moment 0 at $t=2$: 0.0099 unlimited → 0.0118 limited).
 
