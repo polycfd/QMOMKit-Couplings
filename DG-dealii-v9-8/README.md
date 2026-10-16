@@ -42,7 +42,7 @@ Six problem types (A-F) are available. All start from $X \sim N(10, 1)$; problem
 | **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \xi^k$                    | 1 cell, periodic   | 10  | 0.002      | 2         |
 | **F** | none                | growth $G=ξ$    | binary fragmentation $S=\alpha (2^{k-1} - 1)\xi^k$ | 1 cell, periodic   | 10  | 0.002      | 2         |
 
-Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \exp (kt)$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
+Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ( $M_k(t) = M_k(0) \exp (kt)$ ). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
 ## Discretisation
 
