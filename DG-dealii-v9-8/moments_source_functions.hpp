@@ -4,22 +4,45 @@
 
 /**
  * @brief Zero phase-space velocity
- * 
+ *
  * @param[in] t Current time (unused)
  * @param[in] xi Phase space vector (unused)
- * 
+ *
  * @return Vector for zero growth velocity
  */
 inline qmomkit::PhaseSpaceVelocity
 no_growth_velocity()
 {
-  return [](const double /*t*/, const std::vector<double> &xi, std::vector<double>&velocity, unsigned int)
-  {
+  return [](const double /*t*/,
+            const std::vector<double> &xi,
+            std::vector<double>       &velocity,
+            unsigned int) {
     for (unsigned int node = 0; node < xi.size(); ++node)
       velocity[node] = 0.0;
   };
 }
-	
+
+/**
+ * @brief Constant growth velocity
+ * G(\xi) = 0.1
+ *
+ * @param[in] t Current time (unused)
+ * @param[in] xi Phase space vector
+ *
+ * @return Vector for constant growth velocity
+ */
+inline qmomkit::PhaseSpaceVelocity
+constant_growth_velocity()
+{
+  return [](const double /*t*/,
+            const std::vector<double> &xi,
+            std::vector<double>       &velocity,
+            unsigned int) {
+    for (unsigned int node = 0; node < xi.size(); ++node)
+      velocity[node] = 0.1;
+  };
+}
+
 /**
  * @brief Linear growth velocity
  * G(\xi) = \xi
@@ -32,8 +55,10 @@ no_growth_velocity()
 inline qmomkit::PhaseSpaceVelocity
 linear_growth_velocity()
 {
-  return [](const double /*t*/, const std::vector<double> &xi, std::vector<double>&velocity, unsigned int)
-  {
+  return [](const double /*t*/,
+            const std::vector<double> &xi,
+            std::vector<double>       &velocity,
+            unsigned int) {
     for (unsigned int node = 0; node < xi.size(); ++node)
       velocity[node] = xi[node];
   };
@@ -54,8 +79,8 @@ inline qmomkit::QmomMomentRate
 binary_fragmentation_source(const double /*t*/,
                             const qmomkit::QmomSourceContext &moments)
 {
-	// Fragmentation rate
-	// TODO pass as function argument
+  // Fragmentation rate
+  // TODO pass as function argument
   const double fragmentation_rate = 0.5;
 
   std::vector<double> source(moments.size(), 0.0);
@@ -85,7 +110,7 @@ multiplication_source(const double /*t*/,
                       const qmomkit::QmomSourceContext &moments)
 {
   // Multiplication rate
-	// TODO pass as function argument
+  // TODO pass as function argument
   const double rate = 1.0;
 
   std::vector<double> source(moments.size(), 0.0);
@@ -97,7 +122,7 @@ multiplication_source(const double /*t*/,
 
 /**
  * @brief Zero source term
- * 
+ *
  * @param[in] t Current time (unused)
  * @param[in] moments Current moments stored in QMOMKit (unused)
  *

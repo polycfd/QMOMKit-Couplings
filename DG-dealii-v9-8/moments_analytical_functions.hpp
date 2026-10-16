@@ -209,6 +209,113 @@ public:
   const double sigma_physical;
 };
 
+/**
+ * @brief Time-dependent analytical raw moments of a Gaussian distribution that
+ * also varies like a gaussian in physical space, and with a constant phase
+ * space velocity.
+ *
+ * This class inherits from deal.II's Function<dim> and provides the
+ * analytical solution for the raw moments of a normal distribution
+ * \f$X \sim \mathcal{N}(\mu, \sigma^2)\f$. Each vector component @p k
+ * returns the \f$k\f$-th raw moment scaled by an exponential in time:
+ * \f[
+ *   M_k(x,t) = \mathrm{E}[X^{k}]
+ * \f]
+ * where the raw moment of order \f$n = k\f$ is computed from the
+ * general formula for a Gaussian distribution:
+ * \f[
+ *   \mathrm{E}[X^n] = \sum_{j=0}^{\lfloor n/2 \rfloor}
+ *     \binom{n}{2j} \, (2j-1)!! \, \sigma^{2j} \, \mu^{n-2j}
+ * \f]
+ * This supports an arbitrary number of moments.
+ *
+ * At \f$t = 0\f$ this reduces to the static Gaussian raw moments,
+ * making the class suitable both as an initial condition and as an
+ * analytical reference solution. The time is obtained from the base
+ * class via Function::get_time().
+ *
+ * @tparam dim Spatial dimension of the mesh.
+ */
+template <int dim>
+class GaussianPhysicalGaussianPhaseConstant : public Function<dim>
+{
+public:
+  /**
+   * @brief Constructor
+   *
+   * @param n_moments Number of moment equations
+   * @param mu_phase Mean of the Gaussian distribution
+   * @param sigma_phase Standard deviation of the Gaussian distribution
+   * @param sigma_physical Standard deviation of the Gaussian distribution in
+   * physical space
+   */
+  GaussianPhysicalGaussianPhaseConstant(const unsigned int n_moments,
+                                        const double       mu_phase,
+                                        const double       sigma_phase,
+                                        const double       sigma_physical)
+    : Function<dim>(n_moments)
+    , mu_phase(mu_phase)
+    , sigma_phase(sigma_phase)
+    , sigma_physical(sigma_physical)
+  {}
+
+  /**
+   * @brief Return the time-dependent (component+1)-th raw moment.
+   *
+   * @param p         Spatial point (unused — the field is uniform).
+   * @param component Index selecting which moment to return.
+   * @return \f$\mathrm{E}[X^{k}] \f$ where
+   *         \f$k\f$ = @p component and \f$t\f$ is the current time.
+   */
+  virtual double
+  value(const Point<dim> &p, const unsigned int component = 0) const override
+  {
+    const double       t = this->get_time();
+    const unsigned int n = component;
+
+    // Compute E[X^n] for X ~ N(mu_phase, sigma_phase^2) using:
+    // E[X^n] = sum_{k=0}^{floor(n/2)} C(n,2k) * (2k-1)!! * sigma_phase^{2k}
+    //                                                       * mu_phase^{n-2k}
+
+    double phase_space_growth_velocity = 0.1;
+    double mean = mu_phase + phase_space_growth_velocity * t;
+
+    double moment = 0.0;
+    for (unsigned int k = 0; k <= n / 2; ++k)
+      {
+        // Binomial coefficient C(n, 2k)
+        double binom = 1.0;
+        for (unsigned int j = 0; j < 2 * k; ++j)
+          binom *= static_cast<double>(n - j) / static_cast<double>(j + 1);
+
+        // Double factorial (2k-1)!! with (-1)!! = 1 by convention
+        double dfact = 1.0;
+        for (unsigned int j = 1; j < 2 * k; j += 2)
+          dfact *= j;
+
+        moment += binom * dfact * std::pow(sigma_phase, 2.0 * k) *
+                  std::pow(mean, static_cast<double>(n - 2 * k));
+      }
+
+    Point<dim> shifted_p = p;
+    shifted_p[0] -= t; // shift by velocity_x * t
+
+    // Wrap into [-1, 1]
+    const double L = 2.0;
+    shifted_p[0]   = shifted_p[0] - L * std::floor((shifted_p[0] + 1.0) / L);
+
+    return moment * std::exp(-shifted_p.norm_square() /
+                             (2.0 * sigma_physical * sigma_physical));
+  }
+
+  /// Mean of the Gaussian distribution (phase space)
+  const double mu_phase;
+  /// Standard deviation of the Gaussian distribution (phase space)
+  const double sigma_phase;
+  /// Standard deviation of the Gaussian distribution (physical space)
+  const double sigma_physical;
+};
+
 template <int dim>
 class GaussianPhysicalConstantPhase : public Function<dim>
 {
