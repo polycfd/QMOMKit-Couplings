@@ -7,13 +7,13 @@ Finite-element Discontinuous Galerkin (DG) transport in physical space ([deal.II
 A number density $n(x, \xi, t)$ obeys
 
 ```math
-  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} (G(\xi)\, n) = 0
+  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
 ```
 
 The raw moments $M_k = \int \xi^k \, n d\xi$ are transported instead:
 
 ```math
-  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\matbf{u} \, M_k) = S_k
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k
 ```
 
 QMOMKit closes $S_k$ by Wheeler inversion of the first $2n$ moments. Rather
@@ -33,21 +33,21 @@ leave the realizable cone. Only the inversion of the incoming moments can fail.
 
 Six problem types (A-F) are available. All start from $X ~ N(10, 1)$; problems B, C, and D also carry a Gaussian blob in space ($σ_space = 0.25$). Nodes $n = n_moments/2$. Problems E and F also include source terms. Problems A to E have an analytical solution, and in these cases the solver reports a true absolute L2 error. Problems A, D, and F have a linear growth velocity in phase space, while problem C has a constant growth velocity.
 
-|       | Physical space      | Phase advection | Phase moment source                        | Mesh               | N   | Δt    | t_end |
-| ----- | ------------------- | --------------- | ------------------------------------------ | ------------------ | --- | ----- | ----- |
-| **A** | none                | growth $G=ξ$    | none                                       | 1 cell, periodic   | 10  | 0.002 | 2     |
-| **B** | advection $u=1$     | none            | none                                       | 50 cells, periodic | 10  | 0.002 | 2     |
-| **C** | advection $u=1$     | growth $G=0.1$  | none                                       | 50 cells, periodic | 10  | 0.002 | 2     |
-| **D** | Taylor–Green vortex | growth $G=ξ$    | none                                       | 50×50              | 6   | 0.005 | 20    |
-| **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \, \xi^k$         | 1 cell, periodic   | 10  | 0.002 | 2     |
-| **F** | none                | growth $G=ξ$    | binary fragmentation `S=α (2^(k-1) - 1)ξᵏ` | 1 cell, periodic   | 10  | 0.002 | 2     |
+|       | Physical space      | Phase advection | Phase moment source                                | Mesh               | $N$ | $\delta t$ | t_end |
+| ----- | ------------------- | --------------- | -------------------------------------------------- | ------------------ | --- | ---------- | ----- |
+| **A** | none                | growth $G=ξ$    | none                                               | 1 cell, periodic   | 10  | 0.002      | 2     |
+| **B** | advection $u=1$     | none            | none                                               | 50 cells, periodic | 10  | 0.002      | 2     |
+| **C** | advection $u=1$     | growth $G=0.1$  | none                                               | 50 cells, periodic | 10  | 0.002      | 2     |
+| **D** | Taylor–Green vortex | growth $G=ξ$    | none                                               | 50×50              | 6   | 0.005      | 20    |
+| **E** | none                | growth $G=ξ$    | multiplication $S=\alpha \xi^k$                    | 1 cell, periodic   | 10  | 0.002      | 2     |
+| **F** | none                | growth $G=ξ$    | binary fragmentation $S=\alpha (2^(k-1) - 1)\xi^k$ | 1 cell, periodic   | 10  | 0.002      | 2     |
 
-Problem A validates QMOM alone: with `u = 0` the advection operator vanishes and the closure is exact (`M_k(t) = M_k(0) e^{kt}`). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
+Problem A validates QMOM alone: with $\mathbf{u} = 0$ the advection operator vanishes and the closure is exact ($M_k(t) = M_k(0) \exp^{kt}$). Problem B is the inverse, pure transport. Problem C is both, so comparing it against B separates the two error contributions. Problem D's exact solution is the initial field at the foot of the characteristic, traced backwards with RK4 in `exactSolution::traceBackToOrigin()`. Problem E validates QMOM including a source term, and F showcases a QMOM-alone case with binary fragmentation (no analytical solution).
 
 ## Discretisation
 
 **Space.** `FE_DGQ(1)` in an `FESystem`, one component per moment. `QGauss(2)`.
-Standard upwind DG: volume term `u·∇φᵢ M` plus an upwind interior-face flux. No
+Standard upwind DG: volume term $\mathbf{u} \cdot \nabla \psi_i M$ plus an upwind interior-face flux. No
 boundary work — A/B/C/E/F are periodic, D has zero normal velocity. DG mass matrices are block-diagonal, so no global system is assembled; each cell's local mass matrix is inverted in the `mesh_loop` copier.
 
 **Time.** Explicit SSP-RK3, with the **Lie-split** operator: the three
@@ -68,18 +68,18 @@ solution and the run aborts. Four knobs, all members of `QMOM1DPhaseSpace`:
 | `repair_broken_cells`   | `false`                | last-resort rebuild of non-invertible cells      |
 
 **Limiter.** Each cell polynomial is squeezed towards its own cell average,
-`ũ_K = ū_K + θ(u_K − ū_K)`, with `θ` the largest factor keeping it inside the
+$\tilde{u}_K = \tilde{u}_K + \theta (u_K − \tilde{u}_K)$, with $\theta$ the largest factor keeping it inside the
 pointwise range the solution had entering the timestep. The average is
 untouched, so the limiter is exactly conservative (verified to 6e-16), and
-`θ = 1` in smooth regions. Result on B: zero overshoot and undershoot, at a
-modest accuracy cost (moment 0 at `t=2`: 0.0099 unlimited → 0.0118 limited).
+$\theta = 1$ in smooth regions. Result on B: zero overshoot and undershoot, at a
+modest accuracy cost (moment 0 at $t=2$: 0.0099 unlimited → 0.0118 limited).
 
-A **single `θ` is shared by all moments**, deliberately — a per-moment factor
+A **single $\theta$ is shared by all moments**, deliberately — a per-moment factor
 distorts the ratios between moments and breaks realizability even when each
-moment is individually in range. With one `θ` the result is a convex
+moment is individually in range. With one $\theta$ the result is a convex
 combination, and the realizable set is convex.
 
-**Realizability safeguard.** Halves `θ` until the state can actually be
+**Realizability safeguard.** Halves $\theta$ until the state can actually be
 inverted, falling back on the cell average. Prints `realizability safeguard
 active in N cells` when it engages; silence is the normal case. The gate is
 `compute_qmom(...).ok()`, _not_ `check_realizability()` — the latter rejects
@@ -87,22 +87,22 @@ even the exact analytical ten-moment Gaussian sequence, and gating on it
 flattens the solution onto its cell averages (error 0.0118 → 0.209).
 
 **Adaptive inversion.** A negative recurrence coefficient means the sequence has
-lost realizability and no `n`-node quadrature exists. `qmom_options.adaptive`
+lost realizability and no $n$-node quadrature exists. `qmom_options.adaptive`
 makes Wheeler reduce the node count until one does, instead of failing. Not
 free: it also fires on merely ill-conditioned sequences, inflating problem A's
-high-moment error by 12% (`m₂`) to 68% (`m₉`). Off by default; on for D.
+high-moment error by 12% ($m_2$) to 68% ($m_9$). Off by default; on for D.
 
 **Repair.** `repair_broken_cells` rewrites a cell whose moments cannot be
-inverted with the nominal phase-space shape rescaled to the `m₀` it already
-holds — realizable by construction, since the realizable set is a cone. `m₀` is
-conserved exactly; the higher moments are overwritten. `m0_floor` additionally
-clamps `m₀`. This cannot fail, which is why it is the last line of defence, but
+inverted with the nominal phase-space shape rescaled to the $m_{\theta}$ it already
+holds — realizable by construction, since the realizable set is a cone. $m_{\theta}$ is
+conserved exactly; the higher moments are overwritten. $m_{\theta, floor}$ additionally
+clamps $m_{\theta}$. This cannot fail, which is why it is the last line of defence, but
 a run leaning on it is under-resolved.
 
-One failure mode none of this fixes: if `m₀` decays below QMOMKit's `cutoff`
-(1e-30) in the far field, even the cell average is unusable. With
-`σ_space = 0.25` the smallest `m₀` on the mesh is ~1.3e-9; at `σ_space = 0.1`
-the initial condition is already unrepresentable at 2e-56.
+One failure mode none of this fixes: if $m_{\theta}$ decays below QMOMKit's `cutoff`
+($10 \times 10^{-30}$) in the far field, even the cell average is unusable. With
+$\sigma_{space} = 0.25$ the smallest $m_{\theta}$ on the mesh is ~$1.3 \times 10^{-9}$; at $\sigma_{space} = 0.1$
+the initial condition is already unrepresentable at $2 \times 10^{-56}$.
 
 ## Building
 
@@ -127,10 +127,10 @@ cd build && ./qmomAdvectionDG A     # or B, C, D, E, F — defaults to A
 ```
 
 Each step prints the L2 error of every moment. Note the high
-moments are enormous in absolute terms (`m₉ ≈ 9e16` at `t=2`), so read those
+moments are enormous in absolute terms ($m_9 \approx 9 \times 10^{16}$ at $t=2$), so read those
 errors relative to the moment values.
 
-The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field `u_k` per moment `M_k`. The variable `output_frequency` controls how often; the initial condition and the final step are always written. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time.
+The `output/` folder contains a file with the computed L2 error and a file with the moments, both at each time step. VTK files `solution<P>-<n>.vtk` are also stored there, containing one scalar field $u_k$ per moment $M_k$. The variable `output_frequency` controls how often; the initial condition and the final step are always written. The `plot_vtk` script will plot the moment distribution over the physical space at the final simulation time.
 
 ```bash
 python plot_vtk.py <directory> <prefix>
@@ -157,11 +157,11 @@ python plot_vtk.py build/output solutionB
 ## Known limitations
 
 - Lie splitting, so first-order in time regardless of the SSP-RK3 stages.
-- No CFL control: `Δt` is fixed per problem.
+- No CFL control: $\delta t$ is fixed per problem.
 - The limiter is written for `FE_DGQ(1)`, whose nodal points coincide with the
   Gauss–Lobatto points the Zhang–Shu argument needs. A higher degree would need
   a larger test-point set.
 - D's reference costs a backward trace per evaluation point, and its cost grows
-  linearly with `t`, so late steps are markedly slower than early ones.
+  linearly with $t$, so late steps are markedly slower than early ones.
 - `print_solution_vector()` exists as a debugging aid; its call site in
   `solve()` is commented out.
