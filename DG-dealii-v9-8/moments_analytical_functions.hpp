@@ -160,7 +160,7 @@ public:
    *
    * @param p         Spatial point (unused — the field is uniform).
    * @param component Index selecting which moment to return.
-   * @return \f$\mathrm{E}[X^{k}] \, e^{a*k\,t}\f$ where
+   * @return \f$\mathrm{E}[X^{k}] \, e^{k\,t}\f$ where
    *         \f$k\f$ = @p component and \f$t\f$ is the current time.
    */
   virtual double
