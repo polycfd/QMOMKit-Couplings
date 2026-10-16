@@ -8,28 +8,28 @@ verification cases with analytical solutions.
 
 ## Equations
 
-A number density `f(x, ξ, t)` over physical space `x` and an internal
-coordinate `ξ` (e.g. particle size) obeys the population balance equation
+A number density $n(x, \xi, t)$ over physical space $x$ and an internal
+coordinate $\xi$ (e.g. particle size) obeys the population balance equation
 
-```
-  ∂f/∂t + ∇ₓ·( u f ) + ∂/∂ξ ( G(ξ) f ) = 0
-```
-
-with `u(x)` the physical velocity and `G(ξ) = dξ/dt` the phase-space velocity
-(growth law). Instead of solving for `f`, the solvers transport its raw moments
-`M_k = ∫ ξᵏ f dξ`, `k = 0 … 2n−1`:
-
-```
-  ∂M_k/∂t + ∇ₓ·( u M_k ) = S_k,      S_k = k ∫ ξ^(k−1) G(ξ) f dξ
+```math
+  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
 ```
 
-`S_k` cannot be computed from the moments alone. The Quadrature Method of
-Moments (QMOM) closes it with an `n`-node quadrature `f ≈ Σᵢ wᵢ δ(ξ − ξᵢ)`,
-whose weights and abscissas QMOMKit recovers from the `2n` moments with the
+with $\mathbf{u}(x)$ the physical velocity and $G(\xi) = d \xi/dt$ the phase-space velocity
+(growth law). Instead of solving for $n$, the solvers transport its raw moments
+$M_k = \int \xi_k \, n \, d\xi$, $k = 0, \ldots, 2n−1$:
+
+```math
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k, \qquad S_k = k \int \xi^{k−1} G(\xi) \, n \, d\xi
+```
+
+$S_k$ cannot be computed from the moments alone. The Quadrature Method of
+Moments (QMOM) closes it with an $n$-node quadrature $n \approx \sum_i w_i \delta (\xi − \xi_i)$,
+whose weights and abscissas QMOMKit recovers from the $2n$ moments with the
 Wheeler algorithm, giving
 
-```
-  S_k = Σᵢ wᵢ k G(ξᵢ) ξᵢ^(k−1)
+```math
+  S_k = \sum_i w_i k G(\xi_i) \xi_i^{k−1}
 ```
 
 The deal.II coupling also supports additional moment source terms, such as
@@ -39,8 +39,8 @@ multiplication and binary fragmentation.
 
 - **Operator splitting (Lie).** Each time step first transports every moment
   through physical space, then advances the phase space cell by cell.
-- **Phase space (QMOMKit).** Instead of integrating `S_k`, QMOMKit moves the
-  quadrature nodes along `dξᵢ/dt = G(ξᵢ)` with fixed weights, then rebuilds the
+- **Phase space (QMOMKit).** Instead of integrating $S_k$, QMOMKit moves the
+  quadrature nodes along $d\xi_i/dt = G(\xi_i)$ with fixed weights, then rebuilds the
   moments from the advanced quadrature. This step is realizable by
   construction; only the inversion of the incoming moments can fail.
 - **Physical space (host solver).** All moments use the same bounded scheme,
@@ -48,20 +48,20 @@ multiplication and binary fragmentation.
 
 ## Couplings
 
-| Directory | Solver | Physical-space discretization | Cases |
-|---|---|---|---|
-| [`OpenFOAM-v14/`](OpenFOAM-v14/README.md) | `qmomAdvectionFoam` | finite volume (OpenFOAM-14), implicit upwind | A–D |
-| [`DG-dealii-v9-8/`](DG-dealii-v9-8/README.md) | `qmomAdvectionDG` | discontinuous Galerkin `FE_DGQ(1)` ([deal.II](https://dealii.org/) 9.8), SSP-RK3, Zhang–Shu limiter | A–F |
+| Directory                                     | Solver              | Physical-space discretization                                                                       | Cases |
+| --------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- | ----- |
+| [`OpenFOAM-v14/`](OpenFOAM-v14/README.md)     | `qmomAdvectionFoam` | finite volume (OpenFOAM-14), implicit upwind                                                        | A–D   |
+| [`DG-dealii-v9-8/`](DG-dealii-v9-8/README.md) | `qmomAdvectionDG`   | discontinuous Galerkin `FE_DGQ(1)` ([deal.II](https://dealii.org/) 9.8), SSP-RK3, Zhang–Shu limiter | A–F   |
 
 ## Verification problems
 
-All start from a Gaussian phase-space distribution `ξ ~ N(10, 1)`.
+All start from a Gaussian phase-space distribution $\xi \sim N(10, 1)$.
 
-- **A**: growth only (`G = ξ`, `u = 0`); exact solution `M_k(t) = M_k(0) eᵏᵗ`. Tests the QMOM closure on its own.
-- **B**: pure advection of a Gaussian blob (`u = 1`, no growth).
-- **C**: advection plus growth; comparing with B separates the two error sources.
+- **A**: growth only ($G = \xi$, $u = 0$); exact solution $M_k(t) = M_k(0) \, \exp (kt)$. Tests the QMOM closure on its own.
+- **B**: pure advection of a Gaussian blob ($u = 1$, no growth).
+- **C**: advection plus growth ($G(\xi) =0.1$); comparing with B separates the two error sources.
 - **D**: 2-D Taylor–Green vortex plus growth; reference solution obtained by tracing characteristics backwards.
-- **E, F** (deal.II only): growth plus a multiplication (E) or binary-fragmentation (F) source term; F has no analytical solution.
+- **E, F** (deal.II only): growth ($G(\xi)=\xi$) plus a multiplication (E) or binary-fragmentation (F) source term; F has no analytical solution.
 
 ## Requirements
 
