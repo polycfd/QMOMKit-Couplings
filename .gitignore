@@ -70,3 +70,6 @@ Testing/
 
 # python post-processing output files
 *.png
+
+# VS Code settings
+.vscode/

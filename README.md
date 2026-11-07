@@ -6,6 +6,14 @@ population balance (moment inversion and evolution of the quadrature). The host
 solver transports the moments through physical space. Each coupling includes
 verification cases with analytical solutions.
 
+## Versioning
+
+QMOMKit-Couplings is released alongside [QMOMKit](https://github.com/polycfd/QMOMKit):
+each release of QMOMKit gets a matching release of this repository with the
+same version number. Release `vX.Y.Z` of QMOMKit-Couplings has been tested
+against release `vX.Y.Z` of QMOMKit, so check out the tag that matches your
+QMOMKit version.
+
 ## Equations
 
 A number density $n(x, \xi, t)$ over physical space $x$ and an internal
