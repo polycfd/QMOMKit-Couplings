@@ -29,8 +29,8 @@ Problem make_problem(const Settings& settings)
     const std::string& name = settings.case_name;
 
     // Li & Marchisio (2022), Section 3.1: particles on 0.3 <= x <= 0.5 in a periodic domain [0, 1] with 600 cells and a time step of 1e-4 s, with
-    // one, two or three velocities. Section 3.2 gives no numbers for its crossing groups; the blocks, velocities and times below are read off Figs. 5
-    // and 6 of the paper.
+    // one, two or three velocities. Section 3.2 gives no numbers for its crossing groups, so the blocks, velocities and times below are read off
+    // Figs. 5 and 6 of the paper.
     if (name.rfind("lm-", 0) == 0)
     {
         problem.x_min = 0.0;

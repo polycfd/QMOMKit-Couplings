@@ -6,14 +6,10 @@ Usage:
     python plot_hyqmom.py riemann     <output> [--flux hll-global] [--nodes 2 3 4]
     python plot_hyqmom.py convergence <output> [--flux hll-global]
 
-`profiles` plots m0 over x at every output time for all node counts, or for
-those given with --nodes, as in
-Figs. 4 and 6 of Li & Marchisio (2022). `fluxes` compares the three fluxes at
-the final time for one node count. `riemann` plots the moments and the
-standardized moments of fl-riemann at t = 0.1, as in Figs. 3 and 4 of Fox &
-Laurent (2022), and `convergence` the relative L2 error of every moment
-against the node count, as in their Fig. 5. Each command writes a PNG file
-into the directory of the case.
+`profiles` plots m0 over x at every output time for all node counts, or for those given with --nodes, as in Figs. 4 and 6 of Li & Marchisio
+(2022). `fluxes` compares the fluxes at the final time for one node count. `riemann` plots the moments and the standardized moments of fl-riemann at
+t = 0.1, as in Figs. 3 and 4 of Fox & Laurent (2022), and `convergence` the relative L2 error of every moment against the node count, as in their
+Fig. 5. Each command writes a PNG file into the directory of the case.
 """
 
 import argparse
@@ -25,8 +21,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 
-# One colour per node count or flux, always in this order, and the exact
-# solution in dark grey.
+# One colour per node count or flux, always in this order, and the exact solution in dark grey.
 SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d6", "#e34948"]
 EXACT = "#2b2b2b"
 
@@ -65,11 +60,10 @@ def plot_profiles(directory, case, flux, selected=None):
         for slot, n in enumerate(node_counts):
             if time in files[n]:
                 profile = read_profile(files[n][time])
-                # The colour belongs to the node count. Each line is narrower
-                # than the one before and every second line is dashed, so that
-                # runs giving the same result stay visible.
-                axis.plot(profile["x"], profile["m0"], color=SERIES[(n - 1) % len(SERIES)],
-                          linewidth=max(2.6 - 0.8 * slot, 0.8), linestyle="--" if slot % 2 else "-", label=f"N = {n}")
+                # The colour belongs to the node count. Each line is narrower than the one before and every second line is dashed, so that runs
+                # giving the same result stay visible.
+                axis.plot(profile["x"], profile["m0"], color=SERIES[(n - 1) % len(SERIES)], linewidth=max(2.6 - 0.8 * slot, 0.8),
+                          linestyle="--" if slot % 2 else "-", label=f"N = {n}")
         axis.set_ylabel("$m_0$")
         axis.text(0.01, 0.85, f"t = {time:g}", transform=axis.transAxes)
         style(axis)
@@ -86,6 +80,7 @@ def plot_fluxes(directory, case, node_count):
     fluxes = ["nodes", "speeds", "hll-local", "hll-global"]
     figure, axis = plt.subplots(figsize=(7.0, 3.0))
     plotted_exact = False
+    final_time = None
     for slot, flux in enumerate(fluxes):
         files = profile_files(directory, flux).get(node_count)
         if not files:
@@ -96,6 +91,9 @@ def plot_fluxes(directory, case, node_count):
             plotted_exact = True
         axis.plot(profile["x"], profile["m0"], color=SERIES[slot], linewidth=1.5, label=flux)
         final_time = max(files)
+    if final_time is None:
+        print(f"No output of N = {node_count} in {directory}")
+        return
     axis.set_xlabel("x")
     axis.set_ylabel("$m_0$")
     axis.legend(frameon=False)
@@ -108,8 +106,7 @@ def plot_fluxes(directory, case, node_count):
 
 
 def standardized(moments, order):
-    """The mean velocity, the variance and the standardized moments S_k up to
-    `order`, from the raw moments m_0, ..., m_order."""
+    """The mean velocity, the variance and the standardized moments S_k up to `order`, from the raw moments m_0, ..., m_order."""
     m0 = moments[0]
     mean = moments[1] / m0
     central = []
@@ -141,7 +138,7 @@ def plot_riemann(directory, flux, node_counts):
                 axis.set_visible(False)
                 continue
             axis.plot(exact_profile["x"], exact, color=EXACT, linewidth=1.2, label="exact")
-            for slot, n in enumerate(node_counts):
+            for n in node_counts:
                 if final_time not in files.get(n, {}):
                     continue
                 profile = read_profile(files[n][final_time])
@@ -174,13 +171,15 @@ def plot_convergence(directory, flux):
     for path in glob.glob(os.path.join(directory, f"N*_{flux}_summary.txt")):
         n = int(re.search(r"N(\d+)_", os.path.basename(path)).group(1))
         with open(path) as file:
-            line = [l for l in file if l.startswith("relative L2 error")][-1]
-        values = re.findall(r"m(\d+) ([0-9.eE+-]+)", line)
+            lines = [l for l in file if l.startswith("relative L2 error")]
+        # A run that stopped has no final line.
+        if not lines:
+            continue
+        values = re.findall(r"m(\d+) ([0-9.eE+-]+)", lines[-1])
         errors[n] = {int(k): float(v) for k, v in values}
     node_counts = sorted(errors)
     orders = sorted({k for n in node_counts for k in errors[n]})
-    # The moment order is a magnitude, so one hue from light to dark encodes
-    # it, with even orders solid and odd orders dashed as in Fox & Laurent.
+    # The moment order is a magnitude, so one hue from light to dark encodes it, with even orders solid and odd orders dashed as in Fox & Laurent.
     colours = plt.cm.Blues(np.linspace(0.35, 1.0, len(orders)))
     figure, axis = plt.subplots(figsize=(7.0, 4.5))
     for colour, k in zip(colours, orders):

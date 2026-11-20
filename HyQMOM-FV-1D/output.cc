@@ -36,8 +36,8 @@ double relative_error(const std::vector<std::vector<double>>& moments, const std
 } // namespace
 
 Output::Output(const Settings& settings, const Problem& problem, const Mesh& mesh, const std::vector<std::vector<double>>& initial_moments)
-    : directory_(settings.output / settings.case_name), label_("N" + std::to_string(settings.node_count) + "_" + flux_label(settings)), mesh_(mesh),
-      initial_m0_(summed_m0(initial_moments))
+    : directory_(settings.output / settings.case_name), label_("N" + std::to_string(settings.node_count) + "_" + flux_label(settings)),
+      node_count_(settings.node_count), mesh_(mesh), initial_m0_(summed_m0(initial_moments)), start_(std::chrono::steady_clock::now())
 {
     std::filesystem::create_directories(directory_);
     summary_.open(directory_ / (label_ + "_summary.txt"));
@@ -101,9 +101,22 @@ void Output::write_profiles(const double time, const std::vector<std::vector<dou
 }
 
 void Output::report_output_time(const double time, const std::vector<std::vector<double>>& moments, const std::vector<std::vector<double>>& exact,
-                                const std::vector<std::vector<double>>& reference, const std::size_t occupied_cells,
-                                const std::size_t cells_with_fewer_nodes)
+                                const std::vector<std::vector<double>>& reference, const std::vector<CellFluxData>& cells)
 {
+    std::size_t occupied_cells = 0;
+    std::size_t cells_with_fewer_nodes = 0;
+    for (const CellFluxData& cell : cells)
+    {
+        if (!cell.empty)
+        {
+            ++occupied_cells;
+            if (cell.active_node_count < node_count_ + 1)
+            {
+                ++cells_with_fewer_nodes;
+            }
+        }
+    }
+
     std::ostringstream line;
     line << "t = " << time_label(time) << ": relative L1 error m0 " << relative_error(moments, exact, 0, 1) << ", m1 "
          << relative_error(moments, exact, 1, 1);
@@ -121,8 +134,9 @@ void Output::report_output_time(const double time, const std::vector<std::vector
 }
 
 void Output::report_final(const double time, const std::vector<std::vector<double>>& moments, const std::vector<std::vector<double>>& exact,
-                          const std::size_t steps, const double largest_speed, const double largest_courant, const double seconds)
+                          const std::size_t steps, const double largest_speed, const double largest_courant)
 {
+    const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start_).count();
     std::ostringstream errors;
     errors << "relative L2 error at t = " << time_label(time) << ":";
     for (std::size_t k = 0; k < moments.front().size(); ++k)
@@ -135,6 +149,27 @@ void Output::report_final(const double time, const std::vector<std::vector<doubl
     cost << steps << " steps, largest speed " << largest_speed << ", largest Courant number from the speeds " << largest_courant << ", " << seconds
          << " s";
     report(cost.str());
+}
+
+void Output::report_qmomkit_failure(const double time, const std::size_t cell, const std::string& message)
+{
+    std::ostringstream reason;
+    reason << "QMOMKit failed in cell " << cell << " at x = " << mesh_.centers[cell] << ", t = " << time << ": " << message;
+    report_failure(reason.str());
+}
+
+void Output::report_courant_failure(const double time, const double courant)
+{
+    std::ostringstream reason;
+    reason << "The Courant number of the fastest characteristic speed is " << courant << " at t = " << time
+           << ". The time step must keep it below one, for example with --courant.";
+    report_failure(reason.str());
+}
+
+void Output::report_failure(const std::string& reason)
+{
+    std::cerr << reason << '\n';
+    summary_ << reason << '\n';
 }
 
 void Output::report(const std::string& line)
