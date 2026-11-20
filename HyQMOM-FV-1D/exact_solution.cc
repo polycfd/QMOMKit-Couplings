@@ -13,21 +13,16 @@ namespace
 constexpr double infinity = std::numeric_limits<double>::infinity();
 constexpr double pi = 3.14159265358979323846;
 
-// The integrals int_lower^upper xi^k N(xi; mean, width^2) dxi, k = 0, ...,
-// count - 1, of a normal distribution of velocities over [lower, upper].
-// With z = (xi - mean) / width, the integrals P_i of z^i over the standard
-// normal density phi follow from P_0, P_1 and an integration by parts:
-// P_i = a^{i-1} phi(a) - b^{i-1} phi(b) + (i - 1) P_{i-2}, where a and b are
-// the bounds in z. The binomial expansion of xi^k = (mean + width z)^k then
+// The integrals int_lower^upper xi^k N(xi; mean, width^2) dxi, k = 0, ..., count - 1, of a normal distribution of velocities over [lower, upper].
+// With z = (xi - mean) / width, the integrals P_i of z^i over the standard normal density phi follow from P_0, P_1 and an integration by parts: P_i =
+// a^{i-1} phi(a) - b^{i-1} phi(b) + (i - 1) P_{i-2}, where a and b are the bounds in z. The binomial expansion of xi^k = (mean + width z)^k then
 // gives the integrals in xi.
-std::vector<double> normal_moments_over(const double mean, const double width, const double lower, const double upper,
-                                        const std::size_t count)
+std::vector<double> normal_moments_over(const double mean, const double width, const double lower, const double upper, const std::size_t count)
 {
     const double a = (lower - mean) / width;
     const double b = (upper - mean) / width;
     const auto density = [](const double z) { return std::isinf(z) ? 0.0 : std::exp(-0.5 * z * z) / std::sqrt(2.0 * pi); };
-    // The upper tail Q(z) = int_z^inf phi, evaluated so that a difference of
-    // two tails does not lose digits on either side of the mean.
+    // The upper tail Q(z) = int_z^inf phi, evaluated so that a difference of two tails does not lose digits on either side of the mean.
     const auto upper_tail = [](const double z) { return 0.5 * std::erfc(z / std::sqrt(2.0)); };
     std::vector<double> standard(count, 0.0);
     if (a >= 0.0)
@@ -71,18 +66,13 @@ double overlap(const double a, const double b, const double c, const double d)
     return std::max(0.0, std::min(b, d) - std::max(a, c));
 }
 
-// The exact moments m_0, ..., m_{count-1}, averaged over the cell
-// [cell_left, cell_right] at time t.
+// The exact moments m_0, ..., m_{count-1}, averaged over the cell [cell_left, cell_right] at time t.
 //
-// Every particle keeps its velocity, so at time t the particles of a group
-// with velocity xi are those that started at x - xi t. A group with a single
-// velocity has simply moved by velocity * t, and its cell average follows from
-// the overlap of the moved interval with the cell. For a group with normally
-// distributed velocities, the particles at x are those whose velocities lie
-// in [(x - right) / t, (x - left) / t]. The moments at x are the integrals of
-// the normal distribution over this interval, and a composite Gauss-Legendre
-// rule averages them over the cell. In a periodic domain, the copies of the
-// interval shifted by whole domain lengths add their particles.
+// Every particle keeps its velocity, so at time t the particles of a group with velocity xi are those that started at x - xi t. A group with a single
+// velocity has simply moved by velocity * t, and its cell average follows from the overlap of the moved interval with the cell. For a group with
+// normally distributed velocities, the particles at x are those whose velocities lie in [(x - right) / t, (x - left) / t]. The moments at x are the
+// integrals of the normal distribution over this interval, and a composite Gauss-Legendre rule averages them over the cell. In a periodic domain, the
+// copies of the interval shifted by whole domain lengths add their particles.
 std::vector<double> exact_cell_moments(const Problem& problem, const double cell_left, const double cell_right, const double time,
                                        const std::size_t count)
 {
@@ -92,8 +82,7 @@ std::vector<double> exact_cell_moments(const Problem& problem, const double cell
 
     for (const Population& population : problem.populations)
     {
-        // The velocity moments of one particle of the group: xi^k for a single
-        // velocity, or the moments of the whole normal distribution.
+        // The velocity moments of one particle of the group: xi^k for a single velocity, or the moments of the whole normal distribution.
         std::vector<double> velocity_moments(count, 1.0);
         if (population.width == 0.0)
         {
@@ -139,8 +128,7 @@ std::vector<double> exact_cell_moments(const Problem& problem, const double cell
         const double gauss_weights[4] = {0.3478548451374538, 0.6521451548625461, 0.6521451548625461, 0.3478548451374538};
         const std::size_t sub_intervals = 8;
         const double sub_width = cell_width / static_cast<double>(sub_intervals);
-        // Beyond twelve standard deviations, the normal distribution holds no
-        // particles that a double can represent.
+        // Beyond twelve standard deviations, the normal distribution holds no particles that a double can represent.
         const double slowest = population.velocity - 12.0 * population.width;
         const double fastest = population.velocity + 12.0 * population.width;
         for (std::size_t s = 0; s < sub_intervals; ++s)

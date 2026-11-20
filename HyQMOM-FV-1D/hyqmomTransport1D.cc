@@ -1,20 +1,16 @@
 // hyqmomTransport1D
 //
-// Free transport of the velocity moments m_0, ..., m_{2N} of a number density
-// in one space dimension, with first-order finite volumes and forward Euler,
-// and with the fluxes built from QMOMKit's HyQMOM (Fox & Laurent 2022):
+// Free transport of the velocity moments m_0, ..., m_{2N} of a number density in one space dimension, with first-order finite volumes and forward
+// Euler, and with the fluxes built from QMOMKit's HyQMOM (Fox & Laurent 2022):
 //
 //     dm_k/dt + dm_{k+1}/dx = 0,    k = 0, ..., 2N.
 //
-// The flux of m_{2N} is m_{2N+1}, which the transported moments do not
-// contain. In every step, QMOMKit reconstructs N + 1 weighted points from the
-// moments of each cell, and returns the characteristic speeds of the closed
-// system with their weights and the moment m_{2N+1} of the weighted points,
+// The flux of m_{2N} is m_{2N+1}, which the transported moments do not contain. In every step, QMOMKit reconstructs N + 1 weighted points from the
+// moments of each cell, and returns the characteristic speeds of the closed system with their weights and the moment m_{2N+1} of the weighted points,
 // which closes the system. The fluxes through the faces are built from these.
 //
-// This file holds the time loop and every call to QMOMKit, so that it shows on
-// its own how a host uses HyQMOM. Everything from QMOMKit carries the prefix
-// qmomkit::. The helpers of this program are in hyqmom_transport:
+// This file holds the time loop and every call to QMOMKit, so that it shows on its own how a host uses HyQMOM. Everything from QMOMKit carries the
+// prefix qmomkit::. The helpers of this program are in hyqmom_transport:
 //
 //   settings.hpp        the command line
 //   cases.hpp           the cases and the mesh
@@ -58,17 +54,13 @@ int main(int argc, char* argv[])
         const std::size_t node_count = settings.node_count;
         const std::size_t moment_count = 2 * node_count + 1;
 
-        // The moments m_0, ..., m_{2N} of every cell, which this code stores
-        // and transports. At t = 0, they are the exact cell averages.
+        // The moments m_0, ..., m_{2N} of every cell, which this code stores and transports. At t = 0, they are the exact cell averages.
         std::vector<std::vector<double>> moments = exact_moments(problem, mesh, 0.0, moment_count);
 
-        // The QMOMKit case. It sets the family, the node count and the options
-        // of every state created from it, and its own moments are not used.
-        // The hyperbolic family is HyQMOM: N + 1 weighted points from
-        // m_0, ..., m_{2N}. The default options are adaptive: when the moments
-        // of a cell lie on the boundary of the realizable set, for example
-        // because the cell holds only k <= N different velocities, QMOMKit
-        // returns the k weighted points of a classical quadrature.
+        // The QMOMKit case. It sets the family, the node count and the options of every state created from it, and its own moments are not used. The
+        // hyperbolic family is HyQMOM: N + 1 weighted points from m_0, ..., m_{2N}. The default options are adaptive: when the moments of a cell lie
+        // on the boundary of the realizable set, for example because the cell holds only k <= N different velocities, QMOMKit returns the k weighted
+        // points of a classical quadrature.
         qmomkit::QmomCase qmom_case;
         qmom_case.node_count = node_count;
         qmom_case.family = qmomkit::QmomFamily::hyperbolic;
@@ -90,18 +82,15 @@ int main(int argc, char* argv[])
         {
             while (true)
             {
-                // 1. QMOMKit: the state of every cell, and what the fluxes need
-                //    from it.
+                // 1. QMOMKit: the state of every cell, and what the fluxes need from it.
                 double slowest = infinity;
                 double fastest = -infinity;
                 for (std::size_t i = 0; i < mesh.cells; ++i)
                 {
                     cells[i] = CellFluxData{};
 
-                    // The state of the moments of the cell, created the way a
-                    // host creates a state for moments it changed itself. A cell
-                    // whose m_0 is below QMOMKit's cutoff is empty and has no
-                    // state, and any other failure stops the run.
+                    // The state of the moments of the cell, created the way a host creates a state for moments it changed itself. A cell whose m_0 is
+                    // below QMOMKit's cutoff is empty and has no state, and any other failure stops the run.
                     const qmomkit::QmomStateCandidate candidate = qmom_case.state_candidate(qmomkit::MomentSet(moments[i]));
                     if (candidate.status == qmomkit::StateCandidateStatus::empty)
                     {
@@ -115,26 +104,18 @@ int main(int argc, char* argv[])
                     }
                     const qmomkit::QmomState& state = *candidate.state;
 
-                    // The moments of a cell and the weighted points
-                    // reconstructed from them form one unit, so the moments of
-                    // the weighted points, which the state stores, replace those
-                    // of the cell. The weighted points carry the fluxes, so the
-                    // transport then changes the moments of the same weighted
-                    // points that it moves. For a cell that holds only k <= N
-                    // different velocities, the k weighted points reproduce
-                    // m_0, ..., m_{2k-1} and determine the higher moments.
-                    // Moments kept apart from the weighted points would
-                    // accumulate rounding errors in these higher moments that no
-                    // flux removes.
+                    // The moments of a cell and the weighted points reconstructed from them form one unit, so the moments of the weighted points,
+                    // which the state stores, replace those of the cell. The weighted points carry the fluxes, so the transport then changes the
+                    // moments of the same weighted points that it moves. For a cell that holds only k <= N different velocities, the k weighted
+                    // points reproduce m_0, ..., m_{2k-1} and determine the higher moments. Moments kept apart from the weighted points would
+                    // accumulate rounding errors in these higher moments that no flux removes.
                     moments[i] = state.moment_values();
 
-                    // The characteristic speeds in ascending order, with a
-                    // weight for each speed, and the closure moment m_{2N+1}.
+                    // The characteristic speeds in ascending order, with a weight for each speed, and the closure moment m_{2N+1}.
                     const qmomkit::HyqmomCharacteristicSpeeds speeds = qmomkit::compute_hyqmom_characteristic_speeds(state);
                     if (!speeds.ok())
                     {
-                        throw std::runtime_error("QMOMKit could not compute the characteristic speeds in " + where.str() + ": " +
-                                                 speeds.message);
+                        throw std::runtime_error("QMOMKit could not compute the characteristic speeds in " + where.str() + ": " + speeds.message);
                     }
 
                     cells[i].empty = false;
@@ -149,15 +130,12 @@ int main(int argc, char* argv[])
                         cells[i].weights = state.quadrature().weights;
                         break;
                     case FluxType::speeds:
-                        // The characteristic speeds with their weights, which
-                        // have the moments m_0, ..., m_{2N+1} of the weighted
-                        // points.
+                        // The characteristic speeds with their weights, which have the moments m_0, ..., m_{2N+1} of the weighted points.
                         cells[i].velocities = speeds.speeds;
                         cells[i].weights = speeds.weights;
                         break;
                     case FluxType::hll:
-                        // The physical flux (m_1, ..., m_{2N}, m_{2N+1}) of the
-                        // weighted points.
+                        // The physical flux (m_1, ..., m_{2N}, m_{2N+1}) of the weighted points.
                         cells[i].physical_flux.assign(state.moment_values().begin() + 1, state.moment_values().end());
                         cells[i].physical_flux.push_back(speeds.closure_moment);
                         break;
@@ -168,8 +146,7 @@ int main(int argc, char* argv[])
                 const double largest_speed_now = std::max(std::abs(slowest), std::abs(fastest));
                 largest_speed = std::max(largest_speed, largest_speed_now);
 
-                // 2. The time step: fixed, or from the Courant number and the
-                //    largest speed, with the last step ending on the output time.
+                // 2. The time step: fixed, or from the Courant number and the largest speed, with the last step ending on the output time.
                 const double remaining = output_time - time;
                 const double nominal_step = problem.time_step > 0.0 ? problem.time_step : problem.courant * mesh.dx / largest_speed_now;
                 if (remaining <= 1.0e-9 * nominal_step)
@@ -179,10 +156,8 @@ int main(int argc, char* argv[])
                 const double dt = remaining < nominal_step * (1.0 + 1.0e-9) ? remaining : nominal_step;
                 largest_courant = std::max(largest_courant, dt * largest_speed_now / mesh.dx);
 
-                // 3. The flux through every face, between the cells on its left
-                //    and on its right. With --hll-speeds global, the HLL wave
-                //    speeds are the slowest and fastest speed in the domain, as
-                //    in Fox & Laurent (2022), and otherwise those of the two cells.
+                // 3. The flux through every face, between the cells on its left and on its right. With --hll-speeds global, the HLL wave speeds are
+                //    the slowest and fastest speed in the domain, as in Fox & Laurent (2022), and otherwise those of the two cells.
                 for (std::size_t f = 0; f <= mesh.cells; ++f)
                 {
                     const std::size_t l = mesh.left_of(f);
@@ -199,11 +174,9 @@ int main(int argc, char* argv[])
                     }
                 }
 
-                // 4. Forward Euler. Each face flux leaves one cell and enters the
-                //    other, so the transport conserves m_0 summed over a periodic
-                //    domain. Only the adaptive reconstruction, which drops weighted
-                //    points of negligible weight, changes this sum, by far less
-                //    than the errors of the scheme.
+                // 4. Forward Euler. Each face flux leaves one cell and enters the other, so the transport conserves m_0 summed over a periodic
+                //    domain. Only the adaptive reconstruction, which drops weighted points of negligible weight, changes this sum, by far less than
+                //    the errors of the scheme.
                 for (std::size_t i = 0; i < mesh.cells; ++i)
                 {
                     for (std::size_t k = 0; k < moment_count; ++k)

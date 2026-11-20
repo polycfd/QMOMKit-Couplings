@@ -19,8 +19,7 @@ std::string time_label(const double time)
     return label.str();
 }
 
-// The relative error of moment k over the cells, in the L1 norm (power 1) or
-// the L2 norm (power 2), normalized by the same norm of `exact`.
+// The relative error of moment k over the cells, in the L1 norm (power 1) or the L2 norm (power 2), normalized by the same norm of `exact`.
 double relative_error(const std::vector<std::vector<double>>& moments, const std::vector<std::vector<double>>& exact, const std::size_t k,
                       const int power)
 {
@@ -37,8 +36,8 @@ double relative_error(const std::vector<std::vector<double>>& moments, const std
 } // namespace
 
 Output::Output(const Settings& settings, const Problem& problem, const Mesh& mesh, const std::vector<std::vector<double>>& initial_moments)
-    : directory_(settings.output / settings.case_name), label_("N" + std::to_string(settings.node_count) + "_" + flux_label(settings)),
-      mesh_(mesh), initial_m0_(summed_m0(initial_moments))
+    : directory_(settings.output / settings.case_name), label_("N" + std::to_string(settings.node_count) + "_" + flux_label(settings)), mesh_(mesh),
+      initial_m0_(summed_m0(initial_moments))
 {
     std::filesystem::create_directories(directory_);
     summary_.open(directory_ / (label_ + "_summary.txt"));
@@ -59,8 +58,8 @@ Output::Output(const Settings& settings, const Problem& problem, const Mesh& mes
     report(line.str());
 }
 
-void Output::write_profiles(const double time, const std::vector<std::vector<double>>& moments,
-                            const std::vector<std::vector<double>>& exact, const std::vector<std::vector<double>>& reference) const
+void Output::write_profiles(const double time, const std::vector<std::vector<double>>& moments, const std::vector<std::vector<double>>& exact,
+                            const std::vector<std::vector<double>>& reference) const
 {
     std::ofstream file(directory_ / (label_ + "_t" + time_label(time) + ".txt"));
     file.imbue(std::locale::classic());
@@ -101,9 +100,9 @@ void Output::write_profiles(const double time, const std::vector<std::vector<dou
     }
 }
 
-void Output::report_output_time(const double time, const std::vector<std::vector<double>>& moments,
-                                const std::vector<std::vector<double>>& exact, const std::vector<std::vector<double>>& reference,
-                                const std::size_t occupied_cells, const std::size_t cells_with_fewer_nodes)
+void Output::report_output_time(const double time, const std::vector<std::vector<double>>& moments, const std::vector<std::vector<double>>& exact,
+                                const std::vector<std::vector<double>>& reference, const std::size_t occupied_cells,
+                                const std::size_t cells_with_fewer_nodes)
 {
     std::ostringstream line;
     line << "t = " << time_label(time) << ": relative L1 error m0 " << relative_error(moments, exact, 0, 1) << ", m1 "
@@ -133,8 +132,8 @@ void Output::report_final(const double time, const std::vector<std::vector<doubl
     report(errors.str());
 
     std::ostringstream cost;
-    cost << steps << " steps, largest speed " << largest_speed << ", largest Courant number from the speeds " << largest_courant << ", "
-         << seconds << " s";
+    cost << steps << " steps, largest speed " << largest_speed << ", largest Courant number from the speeds " << largest_courant << ", " << seconds
+         << " s";
     report(cost.str());
 }
 

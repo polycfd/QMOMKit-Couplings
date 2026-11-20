@@ -9,8 +9,7 @@ namespace hyqmom_transport
 namespace
 {
 
-// Adds to `flux` the moments that the weighted velocities of `cell` carry
-// through a face: those moving right when `rightward` is true, and those
+// Adds to `flux` the moments that the weighted velocities of `cell` carry through a face: those moving right when `rightward` is true, and those
 // moving left otherwise.
 void add_kinetic_flux(const CellFluxData& cell, const bool rightward, std::vector<double>& flux)
 {

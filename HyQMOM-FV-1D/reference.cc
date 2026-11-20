@@ -15,8 +15,7 @@ GroupReference::GroupReference(const Problem& problem, const Mesh& mesh) : mesh_
     {
         return;
     }
-    // The number density of each group at t = 0 is that of the exact solution
-    // of the group alone.
+    // The number density of each group at t = 0 is that of the exact solution of the group alone.
     for (const Population& population : problem.populations)
     {
         Problem single = problem;

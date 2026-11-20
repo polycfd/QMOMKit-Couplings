@@ -28,11 +28,9 @@ Problem make_problem(const Settings& settings)
     Problem problem;
     const std::string& name = settings.case_name;
 
-    // Li & Marchisio (2022), Section 3.1: particles on 0.3 <= x <= 0.5 in a
-    // periodic domain [0, 1] with 600 cells and a time step of 1e-4 s, with
-    // one, two or three velocities. Section 3.2 gives no numbers for its
-    // crossing groups; the blocks, velocities and times below are read off
-    // Figs. 5 and 6 of the paper.
+    // Li & Marchisio (2022), Section 3.1: particles on 0.3 <= x <= 0.5 in a periodic domain [0, 1] with 600 cells and a time step of 1e-4 s, with
+    // one, two or three velocities. Section 3.2 gives no numbers for its crossing groups; the blocks, velocities and times below are read off Figs. 5
+    // and 6 of the paper.
     if (name.rfind("lm-", 0) == 0)
     {
         problem.x_min = 0.0;
@@ -74,10 +72,8 @@ Problem make_problem(const Settings& settings)
             throw std::invalid_argument("Unknown case " + name + ".");
         }
     }
-    // Fox & Laurent (2022), Section 6: a Gaussian distribution of velocities
-    // with m_0 = 1 and variance 1/3 everywhere, whose mean jumps from +1 for
-    // x < 0 to -1 for x >= 0. Both states extend beyond the domain, so the
-    // boundaries let the uniform states flow in and out.
+    // Fox & Laurent (2022), Section 6: a Gaussian distribution of velocities with m_0 = 1 and variance 1/3 everywhere, whose mean jumps from +1 for x
+    // < 0 to -1 for x >= 0. Both states extend beyond the domain, so the boundaries let the uniform states flow in and out.
     else if (name == "fl-riemann")
     {
         const double infinity = std::numeric_limits<double>::infinity();

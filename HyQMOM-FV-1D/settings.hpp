@@ -9,9 +9,8 @@
 namespace hyqmom_transport
 {
 
-// The flux through the faces between cells, built from the QMOMKit state of
-// each cell: the kinetic flux of the weighted points, the kinetic flux of the
-// characteristic speeds, or the HLL flux.
+// The flux through the faces between cells, built from the QMOMKit state of each cell: the kinetic flux of the weighted points, the kinetic flux of
+// the characteristic speeds, or the HLL flux.
 enum class FluxType
 {
     nodes,
@@ -25,8 +24,8 @@ struct Settings
     std::size_t node_count = 0;
     FluxType flux = FluxType::nodes;
     bool global_hll_speeds = false;
-    std::size_t cells = 0;   // zero keeps the number of cells of the case
-    double courant = 0.0;    // zero keeps the time step of the case
+    std::size_t cells = 0; // zero keeps the number of cells of the case
+    double courant = 0.0;  // zero keeps the time step of the case
     double velocity_width = 0.02;
     std::filesystem::path output = "output";
 };
