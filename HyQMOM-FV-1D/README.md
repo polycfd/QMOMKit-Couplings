@@ -137,7 +137,7 @@ Each run writes into `output/<case>/`, which `--output` changes:
 
 ```bash
 python ../plot_hyqmom.py profiles    output lm-tri --flux nodes      # m0 over x at every output time, all N
-python ../plot_hyqmom.py fluxes      output lm-crossing-c --nodes 3  # the fluxes at the final time
+python ../plot_hyqmom.py fluxes      output lm-crossing-c --nodes 3  # the fluxes at the final time, after runs with each flux
 python ../plot_hyqmom.py riemann     output --flux hll-global        # Figs. 3 and 4 of Fox & Laurent
 python ../plot_hyqmom.py convergence output --flux hll-global        # Fig. 5 of Fox & Laurent
 ```

@@ -31,11 +31,6 @@ GroupReference::GroupReference(const Problem& problem, const Mesh& mesh) : mesh_
     }
 }
 
-bool GroupReference::available() const
-{
-    return !densities_.empty();
-}
-
 void GroupReference::advance(const double dt)
 {
     for (std::size_t p = 0; p < densities_.size(); ++p)
@@ -56,7 +51,7 @@ void GroupReference::advance(const double dt)
 
 std::vector<std::vector<double>> GroupReference::moments(const std::size_t count) const
 {
-    if (!available())
+    if (densities_.empty())
     {
         return {};
     }

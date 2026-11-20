@@ -18,9 +18,6 @@ class GroupReference
 public:
     GroupReference(const Problem& problem, const Mesh& mesh);
 
-    // Whether every group has a single velocity, so that a reference exists.
-    [[nodiscard]] bool available() const;
-
     // Transports every group over the time step dt.
     void advance(double dt);
 

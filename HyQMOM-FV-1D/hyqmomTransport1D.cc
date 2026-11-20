@@ -98,9 +98,7 @@ int main(int argc, char* argv[])
 
                 // The moments of a cell and the weighted points reconstructed from them form one unit, so the moments of the weighted points, which
                 // the state stores, replace those of the cell. The weighted points carry the fluxes, so the transport then changes the moments of the
-                // same weighted points that it moves. For a cell that holds only k <= N different velocities, the k weighted points reproduce m_0,
-                // ..., m_{2k-1} and determine the higher moments. Moments kept apart from the weighted points would accumulate rounding errors in
-                // these higher moments that no flux removes.
+                // same weighted points that it moves.
                 moments[i] = state.moment_values();
 
                 // The characteristic speeds in ascending order, with a weight for each speed, and the closure moment m_{2N+1}.
