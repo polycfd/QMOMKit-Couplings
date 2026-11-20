@@ -4,20 +4,35 @@ Finite-element Discontinuous Galerkin (DG) transport in physical space ([deal.II
 
 ## Model
 
-A number density $n(x, \xi, t)$ obeys
+A number density $n(x, \xi, t)$ over physical space $x$ and an internal
+coordinate $\xi$ (e.g. particle size) obeys the population balance equation
 
 ```math
   \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
 ```
 
-The raw moments $M_k = \int{\xi^k n d\xi}$ are transported instead:
+with $\mathbf{u}(x)$ the physical velocity and $G(\xi) = d\xi/dt$ the
+phase-space velocity (growth law). The raw moments
+$M_k = \int \xi^k \, n \, d\xi$, $k = 0, \ldots, 2n-1$, are transported
+instead:
 
 ```math
-  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k, \qquad S_k = k \int \xi^{k-1} G(\xi) \, n \, d\xi
 ```
 
-QMOMKit closes $S_k$ by Wheeler inversion of the first $2n$ moments. Rather
-than integrate $S_k$, the phase-space half advances the quadrature itself: the
+$S_k$ cannot be computed from the moments alone. QMOMKit closes it with an
+$n$-node quadrature $n \approx \sum_i w_i \delta(\xi - \xi_i)$, whose
+weights and abscissas it recovers from the first $2n$ moments with the Wheeler
+algorithm, giving
+
+```math
+  S_k = \sum_i w_i \, k \, G(\xi_i) \, \xi_i^{k-1}
+```
+
+Besides the growth term, this coupling supports additional moment source terms,
+such as multiplication and binary fragmentation (problems E and F).
+
+Rather than integrate $S_k$, the phase-space half advances the quadrature itself: the
 nodes move along their trajectories and the moments are reconstructed from the
 advanced quadrature. The phase-space evolution is done by the following call:
 

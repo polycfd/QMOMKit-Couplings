@@ -6,20 +6,32 @@ Quadrature Method of Moments in phase space (QMOMKit). Ships as the solver
 
 ## Model
 
-A number density $n(x, \xi, t)$ obeys
+A number density $n(x, \xi, t)$ over physical space $x$ and an internal
+coordinate $\xi$ (e.g. particle size) obeys the population balance equation
 
 ```math
   \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
 ```
 
-The raw moments $M_k = \int \xi_k \, n \, d\xi$ are transported instead:
+with $\mathbf{u}(x)$ the physical velocity and $G(\xi) = d\xi/dt$ the
+phase-space velocity (growth law). The raw moments
+$M_k = \int \xi^k \, n \, d\xi$, $k = 0, \ldots, 2n-1$, are transported
+instead:
 
 ```math
-  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k
+  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k, \qquad S_k = k \int \xi^{k-1} G(\xi) \, n \, d\xi
 ```
 
-QMOMKit closes $S_k$ by Wheeler inversion of the first $2n$ moments. Rather
-than integrate $S_k$, the phase-space half advances the quadrature itself: the
+$S_k$ cannot be computed from the moments alone. QMOMKit closes it with an
+$n$-node quadrature $n \approx \sum_i w_i \delta(\xi - \xi_i)$, whose
+weights and abscissas it recovers from the first $2n$ moments with the Wheeler
+algorithm, giving
+
+```math
+  S_k = \sum_i w_i \, k \, G(\xi_i) \, \xi_i^{k-1}
+```
+
+Rather than integrate $S_k$, the phase-space half advances the quadrature itself: the
 nodes move along their trajectories and the moments are reconstructed from the
 advanced quadrature. Two calls in `phaseSpaceStep.H`:
 
@@ -94,6 +106,9 @@ default (on for D):
 Without either, a failed inversion is a `FatalError` naming the cell.
 
 ## Building
+
+Needs OpenFOAM-14 and an installed QMOMKit (a dependency-free static C++17
+library).
 
 ```bash
 . $HOME/openfoam/OpenFOAM-14/etc/bashrc
