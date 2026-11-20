@@ -2,11 +2,12 @@
 
 Transport of the velocity moments of a number density in one space dimension,
 with the fluxes in physical space built from the HyQMOM of
-[QMOMKit](https://github.com/polycfd/QMOMKit). The code is one C++ file,
-`hyqmomTransport1D.cc`, with first-order finite volumes and forward Euler. It
-shows how a host obtains the closure of the flux, the characteristic speeds and
-the weighted points from QMOMKit, and how it builds three different fluxes from
-them. The cases are those of Li & Marchisio (2022, Sections 3.1 and 3.2), a
+[QMOMKit](https://github.com/polycfd/QMOMKit), with first-order finite volumes
+and forward Euler. The code shows how a host obtains the closure of the flux,
+the characteristic speeds and the weighted points from QMOMKit, and how it
+builds three different fluxes from them. `hyqmomTransport1D.cc` holds only
+`main()`, with the time loop and every call to QMOMKit, and the other files
+hold the parts that do not involve QMOMKit. The cases are those of Li & Marchisio (2022, Sections 3.1 and 3.2), a
 variant of them with normally distributed velocities, and the Riemann problem
 of Fox & Laurent (2022, Section 6). Every case has an exact solution.
 
@@ -57,7 +58,7 @@ qmom_case.node_count = N;
 qmom_case.family = qmomkit::QmomFamily::hyperbolic;
 ```
 
-In every step, `cell_flux_data(...)` does the following for each cell:
+In every step, `main()` does the following for each cell:
 
 1. `qmom_case.state_candidate(qmomkit::MomentSet(moments))` creates a state
    from the moments of the cell. A cell whose $m_0$ is below
@@ -452,15 +453,18 @@ and a flux with a smaller error on this mesh is not necessarily more accurate.
 
 ## Code map
 
-| Item | Location in `hyqmomTransport1D.cc` |
+| File | Content |
 |---|---|
-| Command line | `read_settings()` |
-| Cases | `make_problem()` |
-| Exact solutions | `normal_moments_over()`, `exact_cell_moments()` |
-| QMOMKit calls, per cell | `cell_flux_data()` |
-| Kinetic fluxes | `add_kinetic_flux()` |
-| HLL flux | `hll_flux()` |
-| Time loop, boundaries, reference, output | `main()` |
+| `hyqmomTransport1D.cc` | `main()`: the QMOMKit case, the state of every cell, the replacement of its moments, the characteristic speeds, the fluxes through the faces and the time step |
+| `settings.hpp`, `settings.cc` | the command line |
+| `cases.hpp`, `cases.cc` | the cases and the mesh, with the cells on each side of a face |
+| `exact_solution.hpp`, `exact_solution.cc` | the exact cell averages of the moments |
+| `fluxes.hpp`, `fluxes.cc` | the kinetic and the HLL flux, built from what QMOMKit returns for each cell |
+| `reference.hpp`, `reference.cc` | the groups of particles transported separately |
+| `output.hpp`, `output.cc` | the profiles and the summary |
+
+Only `hyqmomTransport1D.cc` calls QMOMKit, and everything from QMOMKit carries
+the prefix `qmomkit::`. The other files use the namespace `hyqmom_transport`.
 
 ## Known limitations
 

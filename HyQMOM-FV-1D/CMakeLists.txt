@@ -14,6 +14,14 @@ find_package(QMOMKit CONFIG REQUIRED
     $ENV{QMOMKIT_DIR}
   )
 
-add_executable(hyqmomTransport1D hyqmomTransport1D.cc)
+add_executable(hyqmomTransport1D
+  hyqmomTransport1D.cc
+  cases.cc
+  exact_solution.cc
+  fluxes.cc
+  output.cc
+  reference.cc
+  settings.cc
+  )
 target_compile_features(hyqmomTransport1D PRIVATE cxx_std_17)
 target_link_libraries(hyqmomTransport1D PRIVATE qmomkit::qmomkit)
