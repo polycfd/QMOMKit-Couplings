@@ -23,7 +23,8 @@ The format is based on
   of Li & Marchisio (2022, Sections 3.1 and 3.2) with one, two or three
   velocities and with crossing groups of particles, a variant with normally
   distributed velocities, and the Riemann problem of Fox & Laurent (2022,
-  Section 6). A plotting script, `plot_hyqmom.py`.
+  Section 6). A plotting script, `plot_hyqmom.py`, and a script that runs
+  every case and plots the results, `run_all.sh`.
 
 ## [1.0.0] - 2026-11-07
 

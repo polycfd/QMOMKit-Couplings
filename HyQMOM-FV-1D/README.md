@@ -119,6 +119,14 @@ cmake --build build -j
 
 ## Running and output
 
+`run_all.sh` runs every case of the Results section and makes every plot, which takes about 20 minutes:
+
+```bash
+./run_all.sh
+```
+
+Single runs, from the directory `build`:
+
 ```bash
 cd build
 ./hyqmomTransport1D --case lm-tri --nodes 3 --flux nodes
@@ -133,14 +141,15 @@ Each run writes into `output/<case>/`, which `--output` changes:
 
 `<flux>` is `nodes`, `speeds`, `hll-local` or `hll-global`. A run that stops prints the reason, writes it into the summary file and returns 1.
 
-`plot_hyqmom.py` plots the output, here run from the directory `build`:
+`plot_hyqmom.py` writes the plots as PDF files into `output/figures/`, named after the case. For the two runs above:
 
 ```bash
-python ../plot_hyqmom.py profiles    output lm-tri --flux nodes      # m0 over x at every output time, all N
-python ../plot_hyqmom.py fluxes      output lm-crossing-c --nodes 3  # the fluxes at the final time, after runs with each flux
-python ../plot_hyqmom.py riemann     output --flux hll-global        # Figs. 3 and 4 of Fox & Laurent
-python ../plot_hyqmom.py convergence output --flux hll-global        # Fig. 5 of Fox & Laurent
+python3 ../plot_hyqmom.py profiles output lm-tri --flux nodes   # m0 over x at every output time
+python3 ../plot_hyqmom.py riemann  output --flux hll-global     # Figs. 3 and 4 of Fox & Laurent
 ```
+
+Two more commands compare several runs: `fluxes` compares the fluxes for one node count, and `convergence` the errors of `fl-riemann` against the node
+count. The Results section shows both.
 
 ## Results
 
@@ -148,7 +157,7 @@ python ../plot_hyqmom.py convergence output --flux hll-global        # Fig. 5 of
 
 ```bash
 for n in 1 2 3 4; do ./hyqmomTransport1D --case lm-mono --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-mono --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-mono --flux nodes
 ```
 
 All particles have the velocity 0.6, so QMOMKit reconstructs a single weighted point in every cell, and the runs for $N = 1$ to $4$ are identical. At
@@ -159,7 +168,7 @@ diffusion of first-order upwinding.
 
 ```bash
 for n in 1 2 3; do ./hyqmomTransport1D --case lm-bi --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-bi --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-bi --flux nodes
 ```
 
 At $t = 2.5$, with the flux `nodes`:
@@ -178,7 +187,7 @@ velocities, and the blocks do not separate.
 
 ```bash
 for n in 2 3 4; do ./hyqmomTransport1D --case lm-tri --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-tri --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-tri --flux nodes
 ```
 
 At $t = 2.5$, with the flux `nodes`:
@@ -196,7 +205,7 @@ three nodes of Li & Marchisio in their Fig. 4c, the blocks do not separate. $N =
 
 ```bash
 for n in 2 3 4 5 6; do ./hyqmomTransport1D --case lm-tri-gauss --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-tri-gauss --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-tri-gauss --flux nodes
 ```
 
 The velocities of each block of `lm-tri` are normally distributed with a standard deviation of 0.02, so the moments lie inside the realizable set and
@@ -217,7 +226,7 @@ $N = 1$ is left out.
 
 ```bash
 for n in 2 3 4; do ./hyqmomTransport1D --case lm-crossing-a --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-crossing-a --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-crossing-a --flux nodes
 ```
 
 A block moving at 0.5 passes through a block at rest and leaves it unchanged. Two velocities need $N = 2$, and the runs for $N = 2$, 3 and 4 are
@@ -228,7 +237,7 @@ out.
 
 ```bash
 for n in 2 3 4; do ./hyqmomTransport1D --case lm-crossing-b --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-crossing-b --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-crossing-b --flux nodes
 ```
 
 Two blocks moving at 0.5 and -0.5 pass through each other and separate again. Two velocities need $N = 2$, and the runs for $N = 2$, 3 and 4 are
@@ -240,7 +249,7 @@ out.
 ```bash
 ./hyqmomTransport1D --case lm-crossing-c --nodes 2 --flux nodes --courant 0.5
 for n in 3 4; do ./hyqmomTransport1D --case lm-crossing-c --nodes $n --flux nodes; done
-python ../plot_hyqmom.py profiles output lm-crossing-c --flux nodes
+python3 ../plot_hyqmom.py profiles output lm-crossing-c --flux nodes
 ```
 
 Blocks moving at 0.5 and -0.5 pass through a block at rest. At $t = 1$, with the flux `nodes`:
@@ -260,8 +269,8 @@ stops. $N = 2$ therefore runs with `--courant 0.5`. $N = 1$ is left out.
 
 ```bash
 for n in 1 2 3 4 5 6 7 8 9 10; do ./hyqmomTransport1D --case fl-riemann --nodes $n --flux hll --hll-speeds global; done
-python ../plot_hyqmom.py riemann output --flux hll-global
-python ../plot_hyqmom.py convergence output --flux hll-global
+python3 ../plot_hyqmom.py riemann output --flux hll-global
+python3 ../plot_hyqmom.py convergence output --flux hll-global
 ```
 
 This is the case that uses all of HyQMOM: the moments stay inside the realizable set, and the closure moment and the characteristic speeds differ from
@@ -283,6 +292,13 @@ those of a classical quadrature. With 2000 cells and the flux `hll-global`:
 The error falls steadily with $N$, as in Fig. 5 of Fox & Laurent. The largest speed of the run agrees with the values that Fox & Laurent report for
 their final solution, 3.34 for $N = 2$ and 5.32 for $N = 10$.
 
+The three fluxes for $N = 4$, with local wave speeds for HLL, together with the run of `hll-global` above:
+
+```bash
+for flux in nodes speeds hll; do ./hyqmomTransport1D --case fl-riemann --nodes 4 --flux $flux; done
+python3 ../plot_hyqmom.py fluxes output fl-riemann --nodes 4
+```
+
 ## Code map
 
 | File | Content |
@@ -294,6 +310,8 @@ their final solution, 3.34 for $N = 2$ and 5.32 for $N = 10$.
 | `fluxes.hpp`, `fluxes.cc` | the kinetic and the HLL flux, built from what QMOMKit returns for each cell |
 | `reference.hpp`, `reference.cc` | the groups of particles transported separately |
 | `output.hpp`, `output.cc` | the profiles and the summary |
+| `plot_hyqmom.py` | the plots |
+| `run_all.sh` | every case of the Results section, with its plots |
 
 Only `hyqmomTransport1D.cc` calls QMOMKit, and everything from QMOMKit carries the prefix `qmomkit::`. The other files use the namespace
 `hyqmom_transport`.

@@ -9,7 +9,7 @@ Usage:
 `profiles` plots m0 over x at every output time for all node counts, or for those given with --nodes, as in Figs. 4 and 6 of Li & Marchisio
 (2022). `fluxes` compares the fluxes at the final time for one node count. `riemann` plots the moments and the standardized moments of fl-riemann at
 t = 0.1, as in Figs. 3 and 4 of Fox & Laurent (2022), and `convergence` the relative L2 error of every moment against the node count, as in their
-Fig. 5. Each command writes a PNG file into the directory of the case.
+Fig. 5. The plots are written as PDF files into <output>/figures/, named after the case.
 """
 
 import argparse
@@ -52,6 +52,9 @@ def style(axis):
 def plot_profiles(directory, case, flux, selected=None):
     files = profile_files(directory, flux)
     node_counts = sorted(n for n in files if selected is None or n in selected)
+    if not node_counts:
+        print(f"No output of the flux {flux} in {directory}")
+        return []
     times = sorted({t for n in node_counts for t in files[n] if t > 0.0})
     figure, axes = plt.subplots(len(times), 1, figsize=(7.0, 1.4 * len(times) + 0.6), sharex=True)
     for axis, time in zip(np.atleast_1d(axes), times):
@@ -71,9 +74,7 @@ def plot_profiles(directory, case, flux, selected=None):
     np.atleast_1d(axes)[-1].set_xlabel("x")
     figure.suptitle(f"{case}, flux {flux}", y=1.0)
     figure.tight_layout()
-    path = os.path.join(directory, f"profiles_{flux}.png")
-    figure.savefig(path, dpi=150, bbox_inches="tight")
-    print(path)
+    return [(f"profiles_{flux}", figure)]
 
 
 def plot_fluxes(directory, case, node_count):
@@ -93,16 +94,14 @@ def plot_fluxes(directory, case, node_count):
         final_time = max(files)
     if final_time is None:
         print(f"No output of N = {node_count} in {directory}")
-        return
+        return []
     axis.set_xlabel("x")
     axis.set_ylabel("$m_0$")
     axis.legend(frameon=False)
     axis.set_title(f"{case}, N = {node_count}, t = {final_time:g}")
     style(axis)
     figure.tight_layout()
-    path = os.path.join(directory, f"fluxes_N{node_count}.png")
-    figure.savefig(path, dpi=150, bbox_inches="tight")
-    print(path)
+    return [(f"fluxes_N{node_count}", figure)]
 
 
 def standardized(moments, order):
@@ -116,8 +115,13 @@ def standardized(moments, order):
     return mean, variance, [central[k] / variance ** (k / 2) for k in range(order + 1)]
 
 
-def plot_riemann(directory, flux, node_counts):
+def plot_riemann(directory, flux, requested):
     files = profile_files(directory, flux)
+    # The requested node counts that have output.
+    node_counts = [n for n in requested if n in files]
+    if not node_counts:
+        print(f"No output of N = {', '.join(map(str, requested))} with the flux {flux} in {directory}")
+        return []
     final_time = max(files[node_counts[0]])
     largest = max(n for n in files if final_time in files[n])
     exact_profile = read_profile(files[largest][final_time])
@@ -125,6 +129,7 @@ def plot_riemann(directory, flux, node_counts):
     exact_moments = [exact_profile[f"exact_m{k}"] for k in range(order + 1)]
     exact_mean, exact_variance, exact_standardized = standardized(exact_moments, order)
 
+    figures = []
     for kind in ["moments", "standardized"]:
         figure, axes = plt.subplots(3, 3, figsize=(10.0, 7.5))
         for panel, axis in enumerate(axes.flat):
@@ -161,9 +166,8 @@ def plot_riemann(directory, flux, node_counts):
         axes.flat[0].legend(frameon=False, fontsize=8)
         figure.suptitle(f"fl-riemann, flux {flux}, t = {final_time:g}")
         figure.tight_layout()
-        path = os.path.join(directory, f"riemann_{kind}_{flux}.png")
-        figure.savefig(path, dpi=150, bbox_inches="tight")
-        print(path)
+        figures.append((f"{kind}_{flux}", figure))
+    return figures
 
 
 def plot_convergence(directory, flux):
@@ -178,6 +182,9 @@ def plot_convergence(directory, flux):
         values = re.findall(r"m(\d+) ([0-9.eE+-]+)", lines[-1])
         errors[n] = {int(k): float(v) for k, v in values}
     node_counts = sorted(errors)
+    if not node_counts:
+        print(f"No completed run with the flux {flux} in {directory}")
+        return []
     orders = sorted({k for n in node_counts for k in errors[n]})
     # The moment order is a magnitude, so one hue from light to dark encodes it, with even orders solid and odd orders dashed as in Fox & Laurent.
     colours = plt.cm.Blues(np.linspace(0.35, 1.0, len(orders)))
@@ -193,9 +200,7 @@ def plot_convergence(directory, flux):
     axis.set_title(f"fl-riemann, flux {flux}")
     style(axis)
     figure.tight_layout()
-    path = os.path.join(directory, f"convergence_{flux}.png")
-    figure.savefig(path, dpi=150, bbox_inches="tight")
-    print(path)
+    return [(f"convergence_{flux}", figure)]
 
 
 def main():
@@ -208,13 +213,18 @@ def main():
     arguments = parser.parse_args()
     directory = os.path.join(arguments.output, arguments.case)
     if arguments.command == "profiles":
-        plot_profiles(directory, arguments.case, arguments.flux or "nodes", arguments.nodes)
+        figures = plot_profiles(directory, arguments.case, arguments.flux or "nodes", arguments.nodes)
     elif arguments.command == "fluxes":
-        plot_fluxes(directory, arguments.case, (arguments.nodes or [3])[0])
+        figures = plot_fluxes(directory, arguments.case, (arguments.nodes or [3])[0])
     elif arguments.command == "riemann":
-        plot_riemann(directory, arguments.flux or "hll-global", arguments.nodes or [2, 3, 4])
+        figures = plot_riemann(directory, arguments.flux or "hll-global", arguments.nodes or [2, 3, 4])
     else:
-        plot_convergence(directory, arguments.flux or "hll-global")
+        figures = plot_convergence(directory, arguments.flux or "hll-global")
+    os.makedirs(os.path.join(arguments.output, "figures"), exist_ok=True)
+    for name, figure in figures:
+        path = os.path.join(arguments.output, "figures", f"{arguments.case}_{name}.pdf")
+        figure.savefig(path, bbox_inches="tight")
+        print(path)
 
 
 if __name__ == "__main__":
