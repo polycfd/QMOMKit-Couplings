@@ -2,9 +2,8 @@
 
 Reference couplings of [QMOMKit](https://github.com/polycfd/QMOMKit) to
 physical-space transport solvers. QMOMKit handles the phase-space part of a
-population balance (moment inversion and evolution of the quadrature). The host
-solver transports the moments through physical space. Each coupling includes
-verification cases with analytical solutions.
+moment method (moment inversion, closures and evolution of the quadrature). The
+host solver transports the moments through physical space. 
 
 ## Versioning
 
@@ -14,71 +13,28 @@ same version number. Release `vX.Y.Z` of QMOMKit-Couplings has been tested
 against release `vX.Y.Z` of QMOMKit, so check out the tag that matches your
 QMOMKit version.
 
-## Equations
-
-A number density $n(x, \xi, t)$ over physical space $x$ and an internal
-coordinate $\xi$ (e.g. particle size) obeys the population balance equation
-
-```math
-  \frac{\partial n}{\partial t} + \nabla_x \cdot (\mathbf{u}\, n) + \frac{\partial}{\partial \xi} [G(\xi)\, n] = 0
-```
-
-with $\mathbf{u}(x)$ the physical velocity and $G(\xi) = d \xi/dt$ the phase-space velocity
-(growth law). Instead of solving for $n$, the solvers transport its raw moments
-$M_k = \int \xi_k \, n \, d\xi$, $k = 0, \ldots, 2n−1$:
-
-```math
-  \frac{\partial M_k}{\partial t} + \nabla_x \cdot (\mathbf{u} \, M_k) = S_k, \qquad S_k = k \int \xi^{k−1} G(\xi) \, n \, d\xi
-```
-
-$S_k$ cannot be computed from the moments alone. The Quadrature Method of
-Moments (QMOM) closes it with an $n$-node quadrature $n \approx \sum_i w_i \delta (\xi − \xi_i)$,
-whose weights and abscissas QMOMKit recovers from the $2n$ moments with the
-Wheeler algorithm, giving
-
-```math
-  S_k = \sum_i w_i k G(\xi_i) \xi_i^{k−1}
-```
-
-The deal.II coupling also supports additional moment source terms, such as
-multiplication and binary fragmentation.
-
-## Solution strategy
-
-- **Operator splitting (Lie).** Each time step first transports every moment
-  through physical space, then advances the phase space cell by cell.
-- **Phase space (QMOMKit).** Instead of integrating $S_k$, QMOMKit moves the
-  quadrature nodes along $d\xi_i/dt = G(\xi_i)$ with fixed weights, then rebuilds the
-  moments from the advanced quadrature. This step is realizable by
-  construction; only the inversion of the incoming moments can fail.
-- **Physical space (host solver).** All moments use the same bounded scheme,
-  so the transported moment vector stays in the (convex) realizable set.
-
 ## Couplings
 
-| Directory                                     | Solver              | Physical-space discretization                                                                       | Cases |
-| --------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- | ----- |
-| [`OpenFOAM-v14/`](OpenFOAM-v14/README.md)     | `qmomAdvectionFoam` | finite volume (OpenFOAM-14), implicit upwind                                                        | A–D   |
-| [`DG-dealii-v9-8/`](DG-dealii-v9-8/README.md) | `qmomAdvectionDG`   | discontinuous Galerkin `FE_DGQ(1)` ([deal.II](https://dealii.org/) 9.8), SSP-RK3, Zhang–Shu limiter | A–F   |
+| Directory                                     | Solver              | Moment method | Physical-space discretization                                                                       |
+| --------------------------------------------- | ------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| [DG-dealii-v9-8](DG-dealii-v9-8/README.md) | `qmomAdvectionDG`   | QMOM          | discontinuous Galerkin `FE_DGQ(1)` ([deal.II](https://dealii.org/) 9.8), SSP-RK3, Zhang–Shu limiter |
+| [HyQMOM-FV-1D](HyQMOM-FV-1D/README.md)     | `hyqmomTransport1D` | HyQMOM        | finite volume, first order, kinetic or HLL fluxes                                                   |
+| [OpenFOAM-v14](OpenFOAM-v14/README.md)     | `qmomAdvectionFoam` | QMOM          | finite volume (OpenFOAM-14), implicit upwind                                                        |
 
-## Verification problems
+The OpenFOAM and deal.II couplings solve a population balance for an internal
+coordinate, such as the particle size, which a physical velocity carries through
+space. The HyQMOM coupling transports the moments of the particle velocity
+itself, as in a kinetic equation. The README of each coupling describes its
+model, solution strategy, cases, requirements, building and running.
 
-All start from a Gaussian phase-space distribution $\xi \sim N(10, 1)$.
+## Authors
 
-- **A**: growth only ($G = \xi$, $u = 0$); exact solution $M_k(t) = M_k(0) \, \exp (kt)$. Tests the QMOM closure on its own.
-- **B**: pure advection of a Gaussian blob ($u = 1$, no growth).
-- **C**: advection plus growth ($G(\xi) =0.1$); comparing with B separates the two error sources.
-- **D**: 2-D Taylor–Green vortex plus growth; reference solution obtained by tracing characteristics backwards.
-- **E, F** (deal.II only): growth ($G(\xi)=\xi$) plus a multiplication (E) or binary-fragmentation (F) source term; F has no analytical solution.
-
-## Requirements
-
-- An installed QMOMKit (static C++17 library), passed to each build through
-  `QMOMKIT_DIR`.
-- OpenFOAM-14 and/or deal.II ≥ 9.8.
-
-The build, run and configuration instructions are in each coupling's README.
+- [Bruno Blais](https://www.polymtl.ca/expertises/en/blais-bruno)
+- Bruna Campos
+- [Fabian Denner](https://www.polymtl.ca/expertises/en/denner-fabian)
 
 ## License
 
-Apache License 2.0; see [`LICENSE`](LICENSE).
+Copyright 2026 The QMOMKit-Couplings developers.
+
+QMOMKit-Couplings is released under the Apache License 2.0. See [LICENSE](LICENSE) for details.
