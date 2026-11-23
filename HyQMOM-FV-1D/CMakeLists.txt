@@ -8,7 +8,7 @@ endif()
 
 # QMOMKIT_DIR is the QMOMKit install prefix, given on the command line
 # (-DQMOMKIT_DIR=...) or in the environment.
-find_package(QMOMKit CONFIG REQUIRED
+find_package(QMOMKit 1.1 CONFIG REQUIRED
   HINTS
     ${QMOMKIT_DIR}
     $ENV{QMOMKIT_DIR}

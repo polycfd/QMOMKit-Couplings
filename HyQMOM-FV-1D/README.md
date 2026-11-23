@@ -7,8 +7,8 @@ only `main()`, with the time loop and every call to QMOMKit, and the other files
 & Marchisio (2022, Sections 3.1 and 3.2), a variant of them with normally distributed velocities, and the Riemann problem of Fox & Laurent (2022,
 Section 6). Every case has an exact solution.
 
-The coupling needs the characteristic speed weights and the closure moment of `compute_hyqmom_characteristic_speeds(...)`, which QMOMKit added after
-version 1.0.0.
+The coupling needs the characteristic speed weights and the closure moment of `compute_hyqmom_characteristic_speeds(...)`, which QMOMKit added in
+version 1.1.
 
 ## Model
 

@@ -18,7 +18,7 @@ The format is based on
   speeds and the closure moment that QMOMKit returns for each cell. The flux
   is the kinetic flux of the weighted points, the kinetic flux of the
   characteristic speeds, or the HLL flux. It needs the characteristic speed
-  weights and the closure moment that QMOMKit added after v1.0.0.
+  weights and the closure moment that QMOMKit added in version 1.1.
 - Verification cases of `hyqmomTransport1D` with exact solutions: the cases
   of Li & Marchisio (2022, Sections 3.1 and 3.2) with one, two or three
   velocities and with crossing groups of particles, a variant with normally
