@@ -10,6 +10,10 @@ The format is based on
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-24
+
+Tested against [QMOMKit v1.1.0](https://github.com/polycfd/QMOMKit/releases/tag/v1.1.0).
+
 ### Added
 
 - `hyqmomTransport1D` in `HyQMOM-FV-1D/`, a one-dimensional coupling of the
@@ -18,7 +22,7 @@ The format is based on
   speeds and the closure moment that QMOMKit returns for each cell. The flux
   is the kinetic flux of the weighted points, the kinetic flux of the
   characteristic speeds, or the HLL flux. It needs the characteristic speed
-  weights and the closure moment that QMOMKit added after v1.0.0.
+  weights and the closure moment that QMOMKit added in version 1.1.
 - Verification cases of `hyqmomTransport1D` with exact solutions: the cases
   of Li & Marchisio (2022, Sections 3.1 and 3.2) with one, two or three
   velocities and with crossing groups of particles, a variant with normally
@@ -49,5 +53,6 @@ First public release, tested against [QMOMKit v1.0.0](https://github.com/polycfd
 - L2 errors of every moment against the analytical solution, reported by
   both solvers.
 
-[Unreleased]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/polycfd/QMOMKit-Couplings/releases/tag/v1.0.0
