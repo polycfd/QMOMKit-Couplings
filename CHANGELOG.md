@@ -10,6 +10,10 @@ The format is based on
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-24
+
+Tested against [QMOMKit v1.1.0](https://github.com/polycfd/QMOMKit/releases/tag/v1.1.0).
+
 ### Added
 
 - `hyqmomTransport1D` in `HyQMOM-FV-1D/`, a one-dimensional coupling of the
@@ -49,5 +53,6 @@ First public release, tested against [QMOMKit v1.0.0](https://github.com/polycfd
 - L2 errors of every moment against the analytical solution, reported by
   both solvers.
 
-[Unreleased]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/polycfd/QMOMKit-Couplings/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/polycfd/QMOMKit-Couplings/releases/tag/v1.0.0
